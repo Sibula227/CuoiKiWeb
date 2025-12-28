@@ -1,0 +1,16 @@
+# Định nghĩa kiểu dữ liệu trả về (giống DTO)
+type QuestionGraphQL {
+    id: ID
+    title: String
+    content: String
+    status: String
+    studentName: String
+    departmentName: String
+    timeAgo: String
+}
+
+# Định nghĩa các Query (Hàm lấy dữ liệu)
+type Query {
+    # Tìm kiếm câu hỏi theo từ khóa
+    searchQuestions(keyword: String): [QuestionGraphQL]
+}
