@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head_fragment}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/layout :: main_content(content=~{:: .my-dashboard})}">
+        
+        <div class="my-dashboard container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h2 class="fw-bold mb-0">Xin chào, <span sec:authentication="name" class="text-success">Bạn</span>! 👋</h2>
+                    <p class="text-muted">Bạn có thắc mắc gì hôm nay không?</p>
+                </div>
+                <a th:href="@{/student/create-question}" class="btn btn-primary btn-lg shadow-lg">
+                    <i class="fa-solid fa-plus me-2"></i> Tạo câu hỏi mới
+                </a>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="glass-card p-4 d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                            <i class="fa-solid fa-comments fs-3 text-success"></i>
+                        </div>
+                        <div>
+                            <h5 class="text-muted mb-0">Câu hỏi của bạn</h5>
+                            <h3 class="fw-bold mb-0" th:text="${questions.size()}">0</h3>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+            <h4 class="fw-bold mb-4">Lịch sử câu hỏi</h4>
+
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show glass-card border-0" role="alert">
+                <i class="fa-solid fa-check-circle me-2"></i> <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="row">
+                <div class="col-12" th:if="${questions.isEmpty()}">
+                    <div class="text-center py-5 text-muted">
+                        <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="100" class="mb-3 opacity-50">
+                        <p>Bạn chưa đặt câu hỏi nào cả.</p>
+                    </div>
+                </div>
+
+                <div class="col-12 mb-3" th:each="q : ${questions}">
+                    <div class="glass-card p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="badge mb-2" 
+                                      th:classappend="${q.status.name() == 'ANSWERED'} ? 'bg-answered' : 'bg-pending'"
+                                      th:text="${q.status == T(com.hcmute.qaute.entity.enums.QuestionStatus).ANSWERED ? 'Đã trả lời' : 'Đang xử lý'}">
+                                    Status
+                                </span>
+                                <h5 class="fw-bold">
+                                    <a th:href="@{/student/question/{id}(id=${q.id})}" class="text-decoration-none text-dark stretched-link">
+                                        <span th:text="${q.title}">Tiêu đề câu hỏi</span>
+                                    </a>
+                                </h5>
+                                <p class="text-muted mb-2 text-truncate" style="max-width: 600px;" th:text="${q.content}">Nội dung tóm tắt...</p>
+                                
+                                <div class="d-flex align-items-center mt-3 text-muted small">
+                                    <span class="me-3"><i class="fa-regular fa-calendar me-1"></i> <span th:text="${q.timeAgo}">2 giờ trước</span></span>
+                                    <span class="me-3"><i class="fa-solid fa-building me-1"></i> <span th:text="${q.departmentName}">Phòng Đào tạo</span></span>
+                                    <span th:if="${q.tagNames != null}" class="text-success">
+                                        <i class="fa-solid fa-tags me-1"></i> <span th:text="${#strings.listJoin(q.tagNames, ', ')}">tag</span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="text-success fs-4">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{fragments/layout :: script_fragment}"></div>
+</body>
+</html>

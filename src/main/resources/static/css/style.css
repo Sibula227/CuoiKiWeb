@@ -1,0 +1,97 @@
+/* Import font hiện đại */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+:root {
+    --primary-color: #10b981; /* Emerald Green */
+    --secondary-color: #059669; /* Darker Green */
+    --accent-color: #d1fae5; /* Light Mint */
+    --bg-gradient: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --shadow-soft: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    color: var(--text-dark);
+}
+
+/* Hiệu ứng Glassmorphism cho các Card */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.15);
+}
+
+/* Override Bootstrap Buttons */
+.btn-primary {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Sidebar độc lạ */
+.sidebar {
+    background: white;
+    min-height: 100vh;
+    border-top-right-radius: 30px;
+    border-bottom-right-radius: 30px;
+    box-shadow: var(--shadow-soft);
+    padding: 20px;
+}
+
+.nav-link {
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    padding: 12px 20px;
+    transition: all 0.3s;
+}
+
+.nav-link:hover, .nav-link.active {
+    background-color: var(--accent-color);
+    color: var(--secondary-color);
+}
+
+.nav-link i {
+    margin-right: 10px;
+    color: var(--primary-color);
+}
+
+/* Badge Status */
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.bg-pending { background-color: #fef3c7; color: #d97706; }
+.bg-answered { background-color: #d1fae5; color: #059669; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
