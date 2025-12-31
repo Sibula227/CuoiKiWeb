@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head_fragment}"></head>
+
+<body>
+    <div th:replace="~{fragments/layout :: main_content(content=~{:: .reply-page})}">
+        <div class="reply-page container-fluid">
+            
+            <a th:href="@{/admin/dashboard}" class="btn btn-light glass-card mb-4 text-muted">
+                <i class="fa-solid fa-arrow-left me-2"></i> Quay lại Dashboard
+            </a>
+
+            <div th:if="${errorMessage}" class="alert alert-danger glass-card border-0" th:text="${errorMessage}"></div>
+            <div th:if="${successMessage}" class="alert alert-success glass-card border-0" th:text="${successMessage}"></div>
+
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="glass-card p-4 h-100">
+                        <div class="d-flex align-items-center mb-4">
+                            <img th:src="${question.studentAvatar != null ? question.studentAvatar : 'https://ui-avatars.com/api/?name=' + question.studentName}" 
+                                 class="rounded-circle me-3 border border-3 border-white shadow-sm" width="60" height="60">
+                            <div>
+                                <h5 class="fw-bold mb-0 text-dark" th:text="${question.studentName}">Nguyễn Văn A</h5>
+                                <span class="badge bg-secondary">Sinh viên</span>
+                                <span class="text-muted small ms-2"><i class="fa-regular fa-clock me-1"></i> <span th:text="${question.timeAgo}"></span></span>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted opacity-25">
+
+                        <h6 class="text-uppercase text-muted fw-bold small ls-1 mb-3">Nội dung câu hỏi</h6>
+                        <h4 class="fw-bold text-success mb-3" th:text="${question.title}">Tiêu đề...</h4>
+                        
+                        <div class="bg-white bg-opacity-50 p-3 rounded-3 mb-4 border border-white">
+                            <p class="mb-0 text-dark" style="line-height: 1.6;" th:text="${question.content}">Nội dung chi tiết...</p>
+                        </div>
+
+                        <div class="d-flex gap-2 mb-3">
+                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2">
+                                <i class="fa-solid fa-building me-2"></i> <span th:text="${question.departmentName}">Phòng ban</span>
+                            </span>
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2">
+                                <i class="fa-solid fa-flag me-2"></i> <span th:text="${question.priority}">Normal</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="glass-card p-4 h-100 d-flex flex-column">
+                        <h5 class="fw-bold mb-4 text-success"><i class="fa-solid fa-paper-plane me-2"></i>Phản hồi & Thảo luận</h5>
+
+                        <div class="flex-grow-1 mb-4 pe-2" style="max-height: 400px; overflow-y: auto;">
+                            <div th:if="${answers.isEmpty()}" class="text-center py-4 text-muted">
+                                <small>Chưa có phản hồi nào. Hãy là người đầu tiên trả lời!</small>
+                            </div>
+
+                            <div th:each="ans : ${answers}" class="mb-3 d-flex"
+                                 th:classappend="${ans.authorRole == 'ADMIN' || ans.authorRole == 'ADVISOR'} ? 'justify-content-end' : 'justify-content-start'">
+                                
+                                <div class="p-3 rounded-4 shadow-sm" style="max-width: 80%;"
+                                     th:classappend="${ans.authorRole == 'ADMIN' || ans.authorRole == 'ADVISOR'} ? 'bg-success text-white rounded-br-0' : 'bg-white text-dark rounded-bl-0'">
+                                     
+                                    <div class="d-flex align-items-center mb-2" 
+                                         th:classappend="${ans.authorRole == 'ADMIN' || ans.authorRole == 'ADVISOR'} ? 'border-bottom border-white border-opacity-25 pb-1' : 'border-bottom pb-1'">
+                                        <small class="fw-bold me-2" th:text="${ans.authorName}">Admin</small>
+                                        <small class="opacity-75" style="font-size: 0.7rem;" th:text="${#temporals.format(ans.createdAt, 'HH:mm dd/MM')}">12:00</small>
+                                    </div>
+                                    <p class="mb-0" th:text="${ans.content}">Nội dung trả lời...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto">
+                            <form th:action="@{/admin/question/{id}/reply(id=${question.id})}" method="post">
+                                <div class="form-floating mb-3">
+                                    <textarea class="form-control border-0 shadow-inner bg-light" placeholder="Nhập câu trả lời..." 
+                                              id="replyContent" name="content" style="height: 120px" required></textarea>
+                                    <label for="replyContent">Nhập nội dung tư vấn của bạn...</label>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="emailNoti" checked>
+                                        <label class="form-check-label small text-muted" for="emailNoti">Gửi email thông báo cho SV</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold shadow">
+                                        Gửi câu trả lời <i class="fa-solid fa-paper-plane ms-2"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:replace="~{fragments/layout :: script_fragment}"></div>
+</body>
+</html>

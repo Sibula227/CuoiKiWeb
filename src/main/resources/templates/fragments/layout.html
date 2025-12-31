@@ -9,53 +9,60 @@
 </head>
 <body>
 
-<div th:fragment="main_content" class="d-flex">
+<div th:fragment="main_content(content)" class="d-flex">
     
-    <div class="sidebar d-flex flex-column flex-shrink-0" style="width: 280px;">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none px-3">
+    <div class="sidebar d-flex flex-column flex-shrink-0 bg-white shadow-sm" style="width: 280px; min-height: 100vh;">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none px-4 py-3 border-bottom">
             <span class="fs-4 fw-bold text-success"><i class="fa-solid fa-leaf me-2"></i>QAUTE</span>
         </a>
-        <hr>
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item">
-                <a th:href="@{/student/dashboard}" class="nav-link active" aria-current="page">
-                    <i class="fa-solid fa-house"></i> Trang chủ
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/student/create-question}" class="nav-link">
-                    <i class="fa-solid fa-circle-question"></i> Đặt câu hỏi
-                </a>
-            </li>
-            <li>
-                <a href="#" class="nav-link">
-                    <i class="fa-solid fa-bell"></i> Thông báo 
-                    <span class="badge bg-danger rounded-pill ms-auto">3</span>
-                </a>
-            </li>
-        </ul>
-        <hr>
-        <div class="dropdown px-3">
-            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="https://ui-avatars.com/api/?name=Sinh+Vien&background=10b981&color=fff" alt="" width="32" height="32" class="rounded-circle me-2">
-                <strong sec:authentication="name">Sinh viên</strong>
-            </a>
-            <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser1">
-                <li><a class="dropdown-item" href="#">Hồ sơ</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <form th:action="@{/logout}" method="post">
-                        <button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
-                    </form>
+        
+        <ul class="nav nav-pills flex-column mb-auto p-3">
+            
+            <div sec:authorize="hasAuthority('STUDENT')">
+                <li class="nav-item">
+                    <a th:href="@{/student/dashboard}" class="nav-link mb-2" 
+                       th:classappend="${currentUri != null && currentUri.startsWith('/student/dashboard')} ? 'active'">
+                        <i class="fa-solid fa-house me-2"></i> Trang chủ
+                    </a>
                 </li>
-            </ul>
+                <li>
+                    <a th:href="@{/student/create-question}" class="nav-link mb-2"
+                       th:classappend="${currentUri != null && currentUri.startsWith('/student/create')} ? 'active'">
+                        <i class="fa-solid fa-circle-question me-2"></i> Đặt câu hỏi
+                    </a>
+                </li>
+            </div>
+
+            <div sec:authorize="hasAnyAuthority('ADMIN', 'ADVISOR')">
+                <li class="nav-item">
+                     <a th:href="@{/admin/dashboard}" class="nav-link mb-2"
+                       th:classappend="${currentUri != null && currentUri.startsWith('/admin')} ? 'active'">
+                        <i class="fa-solid fa-layer-group me-2"></i> Quản lý
+                    </a>
+                </li>
+            </div>
+        </ul>
+        
+        <div class="border-top p-3">
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" data-bs-toggle="dropdown">
+                    <img src="https://ui-avatars.com/api/?name=User&background=10b981&color=fff" width="32" height="32" class="rounded-circle me-2">
+                    <strong sec:authentication="name">User</strong>
+                </a>
+                <ul class="dropdown-menu text-small shadow">
+                    <li>
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
-    <div class="flex-grow-1 p-4" style="height: 100vh; overflow-y: auto;">
+    <div class="flex-grow-1 p-4 bg-light" style="height: 100vh; overflow-y: auto;">
         <div th:replace="${content}"></div>
     </div>
-
 </div>
 
 <script th:fragment="script_fragment" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

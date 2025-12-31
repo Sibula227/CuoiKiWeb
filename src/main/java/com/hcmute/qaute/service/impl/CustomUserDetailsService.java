@@ -27,7 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // 2. Lấy Role của user ra (Ví dụ: "STUDENT", "ADMIN")
         // Spring Security yêu cầu Role phải được bọc trong object GrantedAuthority
-        String roleCode = user.getRole().getCode(); 
+        String roleCode = user.getRole() != null ? user.getRole().getCode().trim().toUpperCase() : "STUDENT"; 
         Set<GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority(roleCode));
 
         // 3. Trả về đối tượng User chuẩn của Spring Security (Không phải User entity của bạn)

@@ -1,13 +1,11 @@
-//Controller này xử lý các trang không cần đăng nhập.
 package com.hcmute.qaute.controller;
 
 import com.hcmute.qaute.dto.UserRegisterDTO;
 import com.hcmute.qaute.service.UserService;
 import jakarta.validation.Valid;
-
-import org.springframework.security.core.Authentication; // <--- QUAN TRỌNG NHẤT
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority; // Import thêm cái này để xử lý role
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,16 +20,13 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
-    // Trang chủ: Nếu chưa đăng nhập thì hiện trang giới thiệu hoặc login
-    @GetMapping("/")
-    public String index() {
-        return "redirect:/login"; // Redirect thẳng về login cho đơn giản
-    }
+    // --- ĐÃ XÓA METHOD index() map với "/" để tránh xung đột với HomeController ---
 
-    // Trang Login (Spring Security sẽ tự xử lý POST, mình chỉ cần trả về View GET)
+    // Trang Login
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
+                            @RequestParam(value = "accessDenied", required = false) String accessDenied,
                             Model model) {
         if (error != null) {
             model.addAttribute("errorMessage", "Tài khoản hoặc mật khẩu không đúng!");
@@ -39,14 +34,17 @@ public class AuthController {
         if (logout != null) {
             model.addAttribute("successMessage", "Đăng xuất thành công!");
         }
-        return "auth/login"; // File: templates/auth/login.html
+        if (accessDenied != null) {
+            model.addAttribute("errorMessage", "Bạn không có quyền truy cập trang này. Vui lòng kiểm tra lại role của tài khoản.");
+        }
+        return "auth/login"; 
     }
 
     // Trang Đăng ký
     @GetMapping("/register")
     public String registerPage(Model model) {
         model.addAttribute("userDTO", new UserRegisterDTO());
-        return "auth/register"; // File: templates/auth/register.html
+        return "auth/register"; 
     }
 
     // Xử lý hành động Đăng ký
@@ -54,31 +52,33 @@ public class AuthController {
     public String processRegister(@Valid @ModelAttribute("userDTO") UserRegisterDTO userDTO,
                                   BindingResult bindingResult,
                                   Model model) {
-        // 1. Check validate form (rỗng, sai email...)
         if (bindingResult.hasErrors()) {
             return "auth/register";
         }
-
-        // 2. Gọi Service đăng ký
         try {
             userService.registerUser(userDTO);
-            return "redirect:/login?registerSuccess"; // Chuyển về login báo thành công
+            return "redirect:/login?registerSuccess"; 
         } catch (RuntimeException e) {
-            // Lỗi nghiệp vụ (trùng email, trùng username)
             model.addAttribute("errorMessage", e.getMessage());
             return "auth/register";
         }
     }
+
+    // Xử lý điều hướng sau khi đăng nhập thành công
     @GetMapping("/default")
     public String defaultAfterLogin(Authentication authentication) {
-        // Lấy role của user đang login
+        // Lấy role của user đang login (Stream để lấy role đầu tiên trong list)
         String role = authentication.getAuthorities().stream()
-                .findFirst().get().getAuthority();
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .orElse("");
 
         if (role.equals("ADMIN") || role.equals("ADVISOR")) {
             return "redirect:/admin/dashboard";
         } else if (role.equals("STUDENT")) {
-            return "redirect:/student/dashboard";
+            // Thay vì về dashboard, ta có thể cho về trang chủ để xem diễn đàn
+            // return "redirect:/student/dashboard"; 
+            return "redirect:/"; // Về lại trang chủ (Home) sau khi login cho tự nhiên
         }
         return "redirect:/";
     }

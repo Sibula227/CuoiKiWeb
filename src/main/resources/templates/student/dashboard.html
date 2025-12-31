@@ -26,21 +26,16 @@
                         </div>
                         <div>
                             <h5 class="text-muted mb-0">Câu hỏi của bạn</h5>
-                            <h3 class="fw-bold mb-0" th:text="${questions.size()}">0</h3>
+                            <h3 class="fw-bold mb-0" th:text="${questions != null ? questions.size() : 0}">0</h3>
                         </div>
                     </div>
                 </div>
-                </div>
+            </div>
 
             <h4 class="fw-bold mb-4">Lịch sử câu hỏi</h4>
 
-            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show glass-card border-0" role="alert">
-                <i class="fa-solid fa-check-circle me-2"></i> <span th:text="${successMessage}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-
             <div class="row">
-                <div class="col-12" th:if="${questions.isEmpty()}">
+                <div class="col-12" th:if="${questions == null || questions.isEmpty()}">
                     <div class="text-center py-5 text-muted">
                         <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="100" class="mb-3 opacity-50">
                         <p>Bạn chưa đặt câu hỏi nào cả.</p>
@@ -51,23 +46,30 @@
                     <div class="glass-card p-4">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <span class="badge mb-2" 
-                                      th:classappend="${q.status.name() == 'ANSWERED'} ? 'bg-answered' : 'bg-pending'"
-                                      th:text="${q.status == T(com.hcmute.qaute.entity.enums.QuestionStatus).ANSWERED ? 'Đã trả lời' : 'Đang xử lý'}">
-                                    Status
+                                <span class="badge mb-2 bg-success bg-opacity-10 text-success" 
+                                      th:if="${q.status != null && q.status.name() == 'ANSWERED'}">
+                                    Đã trả lời
                                 </span>
+                                <span class="badge mb-2 bg-warning bg-opacity-10 text-warning text-dark" 
+                                      th:if="${q.status != null && q.status.name() != 'ANSWERED'}">
+                                    Đang xử lý
+                                </span>
+                                <span class="badge mb-2 bg-secondary" th:if="${q.status == null}">Chưa rõ</span>
+
                                 <h5 class="fw-bold">
                                     <a th:href="@{/student/question/{id}(id=${q.id})}" class="text-decoration-none text-dark stretched-link">
                                         <span th:text="${q.title}">Tiêu đề câu hỏi</span>
                                     </a>
                                 </h5>
-                                <p class="text-muted mb-2 text-truncate" style="max-width: 600px;" th:text="${q.content}">Nội dung tóm tắt...</p>
+                                <p class="text-muted mb-2 text-truncate" style="max-width: 600px;" th:text="${q.content}">
+                                    Nội dung tóm tắt...
+                                </p>
                                 
                                 <div class="d-flex align-items-center mt-3 text-muted small">
-                                    <span class="me-3"><i class="fa-regular fa-calendar me-1"></i> <span th:text="${q.timeAgo}">2 giờ trước</span></span>
-                                    <span class="me-3"><i class="fa-solid fa-building me-1"></i> <span th:text="${q.departmentName}">Phòng Đào tạo</span></span>
-                                    <span th:if="${q.tagNames != null}" class="text-success">
-                                        <i class="fa-solid fa-tags me-1"></i> <span th:text="${#strings.listJoin(q.tagNames, ', ')}">tag</span>
+                                    <span class="me-3"><i class="fa-regular fa-calendar me-1"></i> <span th:text="${q.timeAgo}">Vừa xong</span></span>
+                                    
+                                    <span class="me-3" th:if="${q.departmentName != null}">
+                                        <i class="fa-solid fa-building me-1"></i> <span th:text="${q.departmentName}">Phòng Đào tạo</span>
                                     </span>
                                 </div>
                             </div>

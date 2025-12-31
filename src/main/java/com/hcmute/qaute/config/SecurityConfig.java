@@ -12,7 +12,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.access.AccessDeniedException;
 
 @Configuration
 @EnableWebSecurity
@@ -59,6 +63,9 @@ public class SecurityConfig {
                     .logoutSuccessUrl("/login?logout")
                     .permitAll()
             )
+            .exceptionHandling(exception -> exception
+                .accessDeniedHandler(accessDeniedHandler())
+            )
             // Tắt CSRF cho GraphQL endpoint để gọi từ JS dễ dàng hơn
             .csrf(csrf -> csrf.ignoringRequestMatchers("/graphql/**"));
 
@@ -76,5 +83,17 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
+    }
+    
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return new AccessDeniedHandler() {
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response,
+                    AccessDeniedException accessDeniedException) throws java.io.IOException {
+                // Chuyển hướng về trang login với thông báo lỗi
+                response.sendRedirect("/login?accessDenied=true");
+            }
+        };
     }
 }
