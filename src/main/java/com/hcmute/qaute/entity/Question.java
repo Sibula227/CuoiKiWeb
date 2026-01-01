@@ -60,4 +60,9 @@ public class Question {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+    @Column(name = "student_faculty")
+    private String studentFaculty; // Ví dụ: "Công nghệ thông tin"
+
+    @Column(name = "student_cohort")
+    private String studentCohort;  // Ví dụ: "K2021"
 }

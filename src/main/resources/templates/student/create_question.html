@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head_fragment}"></head>
+
+<body>
+
+    <div th:replace="~{fragments/layout :: main_content(content=~{:: .create-q-page})}">
+        
+        <div class="create-q-page container-fluid">
+            <a th:href="@{/student/dashboard}" class="btn btn-light glass-card mb-4 text-muted border-0 shadow-sm">
+                <i class="fa-solid fa-arrow-left me-2"></i> Quay lại Dashboard
+            </a>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="glass-card p-4 p-md-5">
+                        
+                        <div class="text-center mb-5">
+                            <div class="d-inline-block p-3 rounded-circle bg-success bg-opacity-10 text-success mb-3">
+                                <i class="fa-solid fa-pen-to-square fs-2"></i>
+                            </div>
+                            <h3 class="fw-bold">Đặt câu hỏi mới</h3>
+                            <p class="text-muted">Hãy cung cấp thông tin chi tiết để Ban tư vấn hỗ trợ bạn tốt nhất.</p>
+                        </div>
+
+                        <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center mb-4 border-0 shadow-sm">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            <span th:text="${errorMessage}"></span>
+                        </div>
+
+                        <form th:action="@{/student/create-question}" th:object="${questionDTO}" method="post">
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase ls-1">Khoa / Viện</label>
+                                    <select class="form-select border-0 shadow-sm py-3" th:field="*{faculty}" required>
+                                        <option value="" disabled selected>-- Chọn Khoa --</option>
+                                        <option value="CNTT">Khoa Công nghệ Thông tin</option>
+                                        <option value="CKM">Khoa Cơ khí Chế tạo máy</option>
+                                        <option value="Dien">Khoa Điện - Điện tử</option>
+                                        <option value="Kinhte">Khoa Kinh tế</option>
+                                        <option value="Xaydung">Khoa Xây dựng</option>
+                                        <option value="In">Khoa In & Truyền thông</option>
+                                        <option value="May">Khoa Thời trang & Du lịch</option>
+                                        <option value="Khac">Khác / Viện Đào tạo</option>
+                                    </select>
+                                    <small th:if="${#fields.hasErrors('faculty')}" th:errors="*{faculty}" class="text-danger fw-bold mt-1 d-block"></small>
+                                </div>
+
+                                <div class="col-md-6 mt-3 mt-md-0">
+                                    <label class="form-label fw-bold text-muted small text-uppercase ls-1">Khóa (Niên khóa)</label>
+                                    <select class="form-select border-0 shadow-sm py-3" th:field="*{cohort}" required>
+                                        <option value="" disabled selected>-- Chọn Khóa --</option>
+                                        <option value="K2025">K2025 (Tân sinh viên)</option>
+                                        <option value="K2024">K2024</option>
+                                        <option value="K2023">K2023</option>
+                                        <option value="K2022">K2022</option>
+                                        <option value="K2021">K2021</option>
+                                        <option value="K2020">K2020</option>
+                                        <option value="Khac">Khóa khác / Cựu SV</option>
+                                    </select>
+                                    <small th:if="${#fields.hasErrors('cohort')}" th:errors="*{cohort}" class="text-danger fw-bold mt-1 d-block"></small>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-muted small text-uppercase ls-1">Gửi đến đơn vị</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-0 bg-white shadow-sm ps-3"><i class="fa-solid fa-building text-success"></i></span>
+                                    <select class="form-select form-select-lg border-0 shadow-sm py-3 text-secondary" th:field="*{departmentId}" required>
+                                        <option value="" disabled selected>-- Chọn Phòng/Khoa --</option>
+                                        <option th:each="dept : ${departments}" 
+                                                th:value="${dept.id}" 
+                                                th:text="${dept.name}">Phòng Đào tạo</option>
+                                    </select>
+                                </div>
+                                <small th:if="${#fields.hasErrors('departmentId')}" th:errors="*{departmentId}" class="text-danger fw-bold mt-1 d-block"></small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-muted small text-uppercase ls-1">Tiêu đề câu hỏi</label>
+                                <input type="text" th:field="*{title}" 
+                                       class="form-control form-control-lg border-0 shadow-sm" 
+                                       placeholder="Ví dụ: Thắc mắc về lịch đăng ký học phần HK2..." required>
+                                <small th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="text-danger fw-bold mt-1 d-block"></small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-muted small text-uppercase ls-1">Nội dung chi tiết</label>
+                                <textarea th:field="*{content}" rows="8" 
+                                          class="form-control border-0 shadow-sm" 
+                                          placeholder="Nhập nội dung câu hỏi của bạn tại đây..." required></textarea>
+                                <small th:if="${#fields.hasErrors('content')}" th:errors="*{content}" class="text-danger fw-bold mt-1 d-block"></small>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg py-3 fw-bold shadow">
+                                    <i class="fa-solid fa-paper-plane me-2"></i> Gửi câu hỏi ngay
+                                </button>
+                                <a th:href="@{/student/dashboard}" class="btn btn-link text-decoration-none text-muted">Hủy bỏ</a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{fragments/layout :: script_fragment}"></div>
+</body>
+</html>

@@ -9,4 +9,6 @@ public interface UserService {
     User registerUser(UserRegisterDTO registerDTO);
     UserDTO findByUsername(String username);
     User getUserEntity(String username); // Hàm tiện ích dùng nội bộ
+    void processForgotPassword(String email);
+    void updatePassword(String token, String newPassword);
 }

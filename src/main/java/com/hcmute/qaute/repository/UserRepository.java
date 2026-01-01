@@ -8,13 +8,17 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    // Dùng cho Login (Spring Security loadByUsername)
+    // Dùng cho Login
     Optional<User> findByUsername(String username);
 
-    // Kiểm tra email đã tồn tại chưa khi đăng ký
+    // Dùng cho Đăng ký & Gửi mail quên mật khẩu
     boolean existsByEmail(String email);
     Optional<User> findByEmail(String email);
 
-    // Kiểm tra MSSV đã tồn tại chưa
+    // Kiểm tra MSSV
     boolean existsByStudentIdCode(String studentIdCode);
+
+    // --- BỔ SUNG DÒNG NÀY ---
+    // Tìm user sở hữu token này để cho phép đổi mật khẩu
+    Optional<User> findByResetPasswordToken(String token);
 }
