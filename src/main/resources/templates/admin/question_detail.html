@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head_fragment}"></head>
+
+<body>
+    <div th:replace="~{fragments/layout :: main_content(content=~{:: .admin-answer-page})}">
+        
+        <div class="admin-answer-page container-fluid">
+            <a th:href="@{/admin/dashboard}" class="btn btn-light glass-card mb-4 text-muted border-0 shadow-sm">
+                <i class="fa-solid fa-arrow-left me-2"></i> Về danh sách
+            </a>
+
+            <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center border-0 shadow-sm mb-4">
+                <i class="fa-solid fa-circle-check me-2"></i> <span th:text="${successMessage}"></span>
+            </div>
+             <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center border-0 shadow-sm mb-4">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i> <span th:text="${errorMessage}"></span>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="glass-card p-4 h-100">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="badge bg-light text-secondary border">CÂU HỎI SINH VIÊN</span>
+                            <span class="text-muted small"><i class="fa-regular fa-clock me-1"></i> <span th:text="${question.timeAgo}"></span></span>
+                        </div>
+
+                        <h4 class="fw-bold text-dark mb-3" th:text="${question.title}">Tiêu đề câu hỏi</h4>
+                        
+                        <div class="d-flex gap-3 mb-4 text-muted small">
+                            <span><i class="fa-solid fa-user me-1"></i> <span th:text="${question.studentName}">SV A</span></span>
+                            <span><i class="fa-solid fa-graduation-cap me-1"></i> <span th:text="${question.studentCohort}">K2021</span></span>
+                            <span><i class="fa-solid fa-building-columns me-1"></i> <span th:text="${question.studentFaculty}">CNTT</span></span>
+                        </div>
+
+                        <div class="bg-light p-4 rounded-3 text-secondary" style="white-space: pre-wrap; line-height: 1.6;" th:text="${question.content}">
+                            Nội dung chi tiết...
+                        </div>
+                        
+                        <div class="mt-5">
+                            <h6 class="fw-bold text-primary mb-3">Lịch sử trao đổi</h6>
+                            <div th:if="${answers.isEmpty()}" class="text-muted fst-italic">Chưa có phản hồi nào.</div>
+                            
+                            <div th:each="ans : ${answers}" class="d-flex mb-3">
+                                <div class="me-3">
+                                    <img th:src="'https://ui-avatars.com/api/?name=' + ${ans.username}" class="rounded-circle" width="35">
+                                </div>
+                                <div>
+                                    <div class="bg-white border p-3 rounded-3 shadow-sm">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <strong class="text-dark me-2" th:text="${ans.username}">User</strong>
+                                            <span class="badge" 
+                                                  th:classappend="${ans.roleCode == 'STUDENT'} ? 'bg-secondary' : 'bg-success'"
+                                                  th:text="${ans.roleCode == 'STUDENT' ? 'Sinh viên' : 'Tư vấn viên'}">Role</span>
+                                        </div>
+                                        <p class="mb-0 text-secondary" th:text="${ans.content}">Nội dung...</p>
+                                    </div>
+                                    <small class="text-muted ms-2" th:text="${ans.timeAgo}">Vừa xong</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="glass-card p-4 border-top border-4 border-primary">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-paper-plane me-2 text-primary"></i>Phản hồi câu hỏi</h5>
+                        
+                        <form th:action="@{/admin/question/{id}/answer(id=${question.id})}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold text-uppercase">Nội dung trả lời</label>
+                                <textarea name="content" class="form-control shadow-sm border-0" rows="10" 
+                                          placeholder="Nhập câu trả lời của bạn tại đây..." required></textarea>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary py-3 fw-bold shadow">
+                                    Gửi câu trả lời & Hoàn tất
+                                </button>
+                            </div>
+                            <div class="text-center mt-3">
+                                <small class="text-muted">Hệ thống sẽ tự động cập nhật trạng thái thành <strong>"Đã trả lời"</strong>.</small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:replace="~{fragments/layout :: script_fragment}"></div>
+</body>
+</html>

@@ -13,8 +13,9 @@ import com.hcmute.qaute.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration; // Import để tính khoảng thời gian
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,22 +38,20 @@ public class QuestionServiceImpl implements QuestionService {
         question.setTitle(dto.getTitle());
         question.setContent(dto.getContent());
         question.setStudent(student);
-        question.setStatus(QuestionStatus.PENDING); // Mặc định là Chờ xử lý
+        question.setStatus(QuestionStatus.PENDING); 
 
-        // --- CẬP NHẬT MỚI: LƯU KHOA VÀ KHÓA ---
         question.setStudentFaculty(dto.getFaculty());
         question.setStudentCohort(dto.getCohort());
-        // --------------------------------------
 
         if (dto.getDepartmentId() != null) {
+            // --- SỬA LỖI TẠI ĐÂY ---
+            // Bỏ Long.valueOf(), dùng trực tiếp Integer
             Department dept = departmentRepository.findById(dto.getDepartmentId())
                     .orElseThrow(() -> new RuntimeException("Phòng ban không tồn tại!"));
             question.setDepartment(dept);
         }
 
-        // Tự động gán thời gian tạo là hiện tại
         question.setCreatedAt(LocalDateTime.now());
-
         Question saved = questionRepository.save(question);
         return mapToDTO(saved);
     }
@@ -62,24 +61,52 @@ public class QuestionServiceImpl implements QuestionService {
         User student = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        // Lấy danh sách câu hỏi và sắp xếp cái mới nhất lên đầu (giả sử DB chưa sort)
         List<Question> list = questionRepository.findByStudentId(student.getId());
-        
-        // Nên sort giảm dần theo ngày tạo để user thấy câu mới nhất
-        list.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
-
+        if (list != null) {
+            list.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
+        }
         return list.stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<QuestionResponseDTO> getQuestionsForDashboard(String username) {
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        List<Question> list = new ArrayList<>();
+        String roleCode = currentUser.getRole().getCode();
+
+        if ("ADMIN".equals(roleCode)) {
+            list = questionRepository.findAll();
+        } 
+        else if ("ADVISOR".equals(roleCode)) {
+            if (currentUser.getDepartment() != null) {
+                // Sửa: Lấy ID kiểu Integer nếu Department dùng Integer
+                // Tuy nhiên findByDepartmentId trong QuestionRepository có thể đang để Long
+                // Để an toàn, ta dùng Long.valueOf() nếu bên kia cần Long
+                Long deptId = Long.valueOf(currentUser.getDepartment().getId());
+                list = questionRepository.findByDepartmentId(deptId);
+            } else {
+                list = new ArrayList<>(); 
+            }
+        }
+
+        if (list != null && !list.isEmpty()) {
+            list.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
+        }
+        
+        return list.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<QuestionResponseDTO> getAllQuestions() {
         List<Question> list = questionRepository.findAll();
-        // Sort mới nhất lên đầu
-        list.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
-        
-        return list.stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+        if (list != null && !list.isEmpty()) {
+            list.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
+        }
+        return list.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -89,7 +116,6 @@ public class QuestionServiceImpl implements QuestionService {
         return mapToDTO(q);
     }
     
-    // --- Manual Mapping Entity -> DTO ---
     private QuestionResponseDTO mapToDTO(Question q) {
         QuestionResponseDTO dto = new QuestionResponseDTO();
         dto.setId(q.getId());
@@ -98,9 +124,10 @@ public class QuestionServiceImpl implements QuestionService {
         dto.setPriority(q.getPriority());
         dto.setStatus(q.getStatus());
         dto.setCreatedAt(q.getCreatedAt());
-        
-        // Cải tiến: Tính thời gian tương đối (VD: "2 giờ trước")
         dto.setTimeAgo(calculateTimeAgo(q.getCreatedAt())); 
+
+        dto.setStudentFaculty(q.getStudentFaculty());
+        dto.setStudentCohort(q.getStudentCohort());
 
         if (q.getStudent() != null) {
             dto.setStudentId(q.getStudent().getId());
@@ -109,29 +136,22 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         if (q.getDepartment() != null) {
-            dto.setDepartmentId(q.getDepartment().getId());
+            // Sửa: Department ID là Integer, DTO cũng nên là Integer
+            dto.setDepartmentId(q.getDepartment().getId()); 
             dto.setDepartmentName(q.getDepartment().getName());
         }
         
         return dto;
     }
 
-    // Hàm phụ trợ tính thời gian "X phút trước"
     private String calculateTimeAgo(LocalDateTime createdAt) {
         if (createdAt == null) return "Vừa xong";
-        
         LocalDateTime now = LocalDateTime.now();
         Duration duration = Duration.between(createdAt, now);
         long seconds = duration.getSeconds();
-
-        if (seconds < 60) {
-            return "Vừa xong";
-        } else if (seconds < 3600) {
-            return (seconds / 60) + " phút trước";
-        } else if (seconds < 86400) {
-            return (seconds / 3600) + " giờ trước";
-        } else {
-            return (seconds / 86400) + " ngày trước";
-        }
+        if (seconds < 60) return "Vừa xong";
+        else if (seconds < 3600) return (seconds / 60) + " phút trước";
+        else if (seconds < 86400) return (seconds / 3600) + " giờ trước";
+        else return (seconds / 86400) + " ngày trước";
     }
 }

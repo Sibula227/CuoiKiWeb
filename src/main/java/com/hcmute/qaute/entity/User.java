@@ -67,4 +67,7 @@ public class User {
 
     @Column(name = "reset_password_token_expiry")
     private LocalDateTime resetPasswordTokenExpiry;
+    @ManyToOne
+    @JoinColumn(name = "department_id") // Liên kết với bảng Department
+    private Department department;
 }

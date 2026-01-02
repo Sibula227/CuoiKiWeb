@@ -12,10 +12,15 @@ public class QuestionResponseDTO {
     private String title;
     private String content;
     
-    // Thông tin người hỏi (chỉ lấy tên và avatar để hiển thị)
+    // Thông tin người hỏi
     private Long studentId;
     private String studentName;
     private String studentAvatar;
+
+    // --- BỔ SUNG 2 DÒNG NÀY ---
+    private String studentFaculty; // Khoa
+    private String studentCohort;  // Khóa
+    // --------------------------
 
     // Thông tin phòng ban
     private Integer departmentId;
@@ -25,7 +30,7 @@ public class QuestionResponseDTO {
     private QuestionStatus status;
     
     private LocalDateTime createdAt;
-    private String timeAgo; // Ví dụ: "2 giờ trước" (Xử lý ở Mapper)
+    private String timeAgo;
     
-    private List<String> tagNames; // List tên các tag: ["Học phí", "Học lại"]
+    private List<String> tagNames;
 }

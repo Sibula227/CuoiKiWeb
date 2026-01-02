@@ -46,8 +46,10 @@ public class DataSeedingConfig implements CommandLineRunner {
             admin.setEmail("admin@hcmute.edu.vn");
             admin.setFullName("Quản Trị Viên");
             admin.setPasswordHash(passwordEncoder.encode("123456"));
-            admin.setRole(roleRepository.findByCode("ADMIN").get());
+            admin.setRole(roleRepository.findByCode("ADMIN").orElse(null));
+            admin.setIsActive(true); 
             userRepository.save(admin);
+            System.out.println(">> Đã tạo Admin: admin / 123456");
         }
 
         // 4. Tạo Student mặc định (Pass: 123456)
@@ -58,8 +60,63 @@ public class DataSeedingConfig implements CommandLineRunner {
             student.setFullName("Nguyễn Văn A");
             student.setStudentIdCode("2011001");
             student.setPasswordHash(passwordEncoder.encode("123456"));
-            student.setRole(roleRepository.findByCode("STUDENT").get());
+            student.setRole(roleRepository.findByCode("STUDENT").orElse(null));
+            student.setIsActive(true);
             userRepository.save(student);
+            System.out.println(">> Đã tạo Student: student / 123456");
+        }
+
+        // 5. [MỚI] TẠO 3 ADVISOR CHO 3 PHÒNG BAN (Pass: 123456)
+        
+        // 5.1 Advisor Phòng Đào Tạo
+        if (!userRepository.findByUsername("advisor_dt").isPresent()) {
+            User u = new User();
+            u.setUsername("daotaoadvi");
+            u.setEmail("dt@hcmute.edu.vn");
+            u.setFullName("TVV Đào Tạo");
+            u.setPasswordHash(passwordEncoder.encode("daotao123"));
+            u.setRole(roleRepository.findByCode("ADVISOR").orElse(null));
+            u.setIsActive(true);
+            
+            // Gán vào Phòng Đào Tạo
+            u.setDepartment(departmentRepository.findByCode("DT").orElse(null)); 
+            
+            userRepository.save(u);
+            System.out.println(">> Đã tạo Advisor Đào Tạo: advisor_dt / 123456");
+        }
+
+        // 5.2 Advisor Phòng CTSV
+        if (!userRepository.findByUsername("advisor_ctsv").isPresent()) {
+            User u = new User();
+            u.setUsername("CTSVadvi");
+            u.setEmail("ctsv@hcmute.edu.vn");
+            u.setFullName("TVV CTSV");
+            u.setPasswordHash(passwordEncoder.encode("CTSV123"));
+            u.setRole(roleRepository.findByCode("ADVISOR").orElse(null));
+            u.setIsActive(true);
+
+            // Gán vào Phòng CTSV
+            u.setDepartment(departmentRepository.findByCode("CTSV").orElse(null));
+
+            userRepository.save(u);
+            System.out.println(">> Đã tạo Advisor CTSV: advisor_ctsv / 123456");
+        }
+
+        // 5.3 Advisor Phòng Tài Chính
+        if (!userRepository.findByUsername("advisor_tc").isPresent()) {
+            User u = new User();
+            u.setUsername("taichinhadvi");
+            u.setEmail("tc@hcmute.edu.vn");
+            u.setFullName("TVV Tài Chính");
+            u.setPasswordHash(passwordEncoder.encode("taichinh123"));
+            u.setRole(roleRepository.findByCode("ADVISOR").orElse(null));
+            u.setIsActive(true);
+
+            // Gán vào Phòng Tài Chính
+            u.setDepartment(departmentRepository.findByCode("TC").orElse(null));
+
+            userRepository.save(u);
+            System.out.println(">> Đã tạo Advisor Tài Chính: advisor_tc / 123456");
         }
     }
 }

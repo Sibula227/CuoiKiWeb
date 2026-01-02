@@ -30,4 +30,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     
     // 5. Thống kê: Đếm số lượng câu hỏi theo trạng thái (Dùng vẽ biểu đồ Dashboard)
     long countByStatus(QuestionStatus status);
+    
+    List<Question> findByDepartmentId(Long departmentId);
+    
 }

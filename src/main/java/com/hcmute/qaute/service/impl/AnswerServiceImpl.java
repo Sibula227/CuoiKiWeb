@@ -11,71 +11,98 @@ import com.hcmute.qaute.repository.UserRepository;
 import com.hcmute.qaute.service.AnswerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class AnswerServiceImpl implements AnswerService {
 
-    @Autowired
-    private AnswerRepository answerRepository;
-    @Autowired
-    private QuestionRepository questionRepository;
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private AnswerRepository answerRepository;
+    @Autowired private QuestionRepository questionRepository;
+    @Autowired private UserRepository userRepository;
 
     @Override
-    @Transactional // Để đảm bảo cả 2 hành động (Lưu trả lời + Update status) thành công hoặc cùng thất bại
     public AnswerDTO addAnswer(Long questionId, String content, String username) {
-        User author = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
 
-        // 1. Lưu câu trả lời
         Answer answer = new Answer();
         answer.setContent(content);
-        answer.setQuestion(question);
-        answer.setAuthor(author);
-        answer.setIsPublic(true); // Mặc định public
         
+        // SỬA 1: Dùng setAuthor thay vì setUser (cho khớp với Entity Answer)
+        answer.setAuthor(user); 
+        
+        answer.setQuestion(question);
+        // createdAt sẽ tự động được tạo bởi @PrePersist trong Entity, nhưng gán tay cũng không sao
+        // answer.setCreatedAt(LocalDateTime.now()); 
+
         Answer savedAnswer = answerRepository.save(answer);
 
-        // 2. Cập nhật trạng thái câu hỏi -> ANSWERED
-        // Logic: Nếu người trả lời là ADMIN/ADVISOR thì mới set ANSWERED
-        // Nếu sinh viên comment lại thì set thành PENDING hoặc REOPENED (Tùy logic bạn muốn)
-        String roleCode = author.getRole().getCode();
-        if ("ADMIN".equals(roleCode) || "ADVISOR".equals(roleCode)) {
+        // Logic: Nếu Admin/Advisor trả lời -> Cập nhật trạng thái câu hỏi
+        if (user.getRole().getCode().equals("ADMIN") || user.getRole().getCode().equals("ADVISOR")) {
             question.setStatus(QuestionStatus.ANSWERED);
             questionRepository.save(question);
         }
-
+        
+        // SỬA 2: Trả về DTO thay vì void (cho khớp với Interface)
         return mapToDTO(savedAnswer);
     }
 
     @Override
     public List<AnswerDTO> getAnswersByQuestionId(Long questionId) {
+        // SỬA DÒNG NÀY: Gọi đúng tên hàm có trong Repository
         List<Answer> answers = answerRepository.findByQuestionIdOrderByCreatedAtAsc(questionId);
-        return answers.stream().map(this::mapToDTO).collect(Collectors.toList());
+        
+        return answers.stream()
+                .map(this::mapToDTO) 
+                .collect(Collectors.toList());
     }
 
-    private AnswerDTO mapToDTO(Answer answer) {
+    // --- Hàm phụ trợ MAP Entity -> DTO ---
+    private AnswerDTO mapToDTO(Answer ans) {
         AnswerDTO dto = new AnswerDTO();
-        dto.setId(answer.getId());
-        dto.setQuestionId(answer.getQuestion().getId());
-        dto.setContent(answer.getContent());
-        dto.setCreatedAt(answer.getCreatedAt());
+        dto.setId(ans.getId());
+        dto.setQuestionId(ans.getQuestion().getId());
+        dto.setContent(ans.getContent());
+        dto.setCreatedAt(ans.getCreatedAt());
 
-        if (answer.getAuthor() != null) {
-            dto.setAuthorName(answer.getAuthor().getFullName());
-            dto.setAuthorAvatar(answer.getAuthor().getAvatarUrl());
-            if (answer.getAuthor().getRole() != null) {
-                dto.setAuthorRole(answer.getAuthor().getRole().getCode());
+        // --- MAP DỮ LIỆU USER (Dùng getAuthor thay vì getUser) ---
+        if (ans.getAuthor() != null) {
+            // Map vào biến 'username'
+            dto.setUsername(ans.getAuthor().getFullName()); 
+            
+            // Map vào biến 'avatarUrl'
+            dto.setAvatarUrl(ans.getAuthor().getAvatarUrl());
+
+            // Map vào biến 'roleCode'
+            if (ans.getAuthor().getRole() != null) {
+                dto.setRoleCode(ans.getAuthor().getRole().getCode());
+            } else {
+                dto.setRoleCode("STUDENT");
             }
+        } else {
+            dto.setUsername("Ẩn danh");
+            dto.setRoleCode("STUDENT");
         }
+        
+        // --- TÍNH TOÁN THỜI GIAN ---
+        dto.setTimeAgo(calculateTimeAgo(ans.getCreatedAt()));
+
         return dto;
+    }
+
+    // Hàm tính thời gian "X phút trước"
+    private String calculateTimeAgo(LocalDateTime createdAt) {
+        if (createdAt == null) return "Vừa xong";
+        long seconds = Duration.between(createdAt, LocalDateTime.now()).getSeconds();
+        if (seconds < 60) return "Vừa xong";
+        if (seconds < 3600) return (seconds / 60) + " phút trước";
+        if (seconds < 86400) return (seconds / 3600) + " giờ trước";
+        return (seconds / 86400) + " ngày trước";
     }
 }
