@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head_fragment}"></head>
+<body>
+
+    <div th:replace="~{fragments/layout :: main_content(~{::#dept-content})}">
+        <div id="dept-content">
+            
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+                <i class="fa-solid fa-check-circle me-2"></i><span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i><span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary fw-bold"><i class="fa-solid fa-building me-2"></i>Quản lý Phòng ban</h2>
+                <a th:href="@{/admin/departments/create}" class="btn btn-primary shadow-sm">
+                    <i class="fa-solid fa-plus me-2"></i>Thêm Phòng ban
+                </a>
+            </div>
+
+            <div class="card shadow border-0 rounded-3">
+                <div class="card-body p-0">
+                    <table class="table table-hover table-striped mb-0 align-middle">
+                        <thead class="table-primary">
+                            <tr>
+                                <th class="ps-3 py-3">ID</th>
+                                <th>Mã Phòng (Code)</th>
+                                <th>Tên Phòng ban</th>
+                                <th>Mô tả</th>
+                                <th class="text-end pe-3">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="dept : ${departments}">
+                                <td class="ps-3 fw-bold text-secondary" th:text="${dept.id}">1</td>
+                                
+                                <td><span class="badge bg-secondary" th:text="${dept.code}">DT</span></td>
+                                
+                                <td class="fw-bold text-dark" th:text="${dept.name}">Phòng Đào Tạo</td>
+                                
+                                <td class="text-muted small" th:text="${dept.description}">Mô tả...</td>
+
+                                <td class="text-end pe-3">
+                                    <a th:href="@{/admin/departments/edit/{id}(id=${dept.id})}" class="btn btn-sm btn-outline-primary me-1" title="Sửa">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <a th:href="@{/admin/departments/delete/{id}(id=${dept.id})}" class="btn btn-sm btn-outline-danger" title="Xóa"
+                                       onclick="return confirm('CẢNH BÁO: Xóa phòng ban có thể gây lỗi nếu đang có nhân viên thuộc phòng này. Bạn chắc chắn chứ?')">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+             <div class="mt-3 text-center text-muted small">
+                Có tổng cộng <span th:text="${departments.size()}"></span> phòng ban.
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

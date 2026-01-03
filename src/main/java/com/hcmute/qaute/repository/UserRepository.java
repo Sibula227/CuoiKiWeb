@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // --- BỔ SUNG DÒNG NÀY ---
     // Tìm user sở hữu token này để cho phép đổi mật khẩu
     Optional<User> findByResetPasswordToken(String token);
+    
+    long countByRole_Code(String roleCode);
 }

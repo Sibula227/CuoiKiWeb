@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head_fragment}"></head>
+
+<body>
+    <div th:replace="~{fragments/layout :: main_content(~{::#form-content})}">
+        
+        <div id="form-content">
+            <div class="card shadow-sm mx-auto" style="max-width: 800px;">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0" th:text="${user.id == null} ? 'Thêm mới User' : 'Cập nhật User'">Form User</h4>
+                </div>
+                <div class="card-body">
+                    
+                    <form th:action="@{/admin/users/save}" th:object="${user}" method="post">
+                        <input type="hidden" th:field="*{id}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Username</label>
+                            <input type="text" class="form-control" th:field="*{username}" required 
+                                   th:readonly="${user.id != null}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Họ và Tên</label>
+                            <input type="text" class="form-control" th:field="*{fullName}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" class="form-control" th:field="*{email}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mật khẩu</label>
+                            <input type="password" class="form-control" th:field="*{passwordHash}" 
+                                   th:required="${user.id == null}"
+                                   placeholder="Nhập mật khẩu mới (để trống nếu giữ nguyên)">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Vai trò</label>
+                                <select class="form-select" th:field="*{role}" required>
+                                    <option value="" disabled selected>-- Chọn vai trò --</option>
+                                    <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.description}"></option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Phòng ban (Dành cho Advisor)</label>
+                                <select class="form-select" th:field="*{department}">
+                                    <option value="">-- Không thuộc phòng ban --</option>
+                                    <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <a th:href="@{/admin/users}" class="btn btn-secondary me-2">Hủy</a>
+                            <button type="submit" class="btn btn-success">Lưu lại</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

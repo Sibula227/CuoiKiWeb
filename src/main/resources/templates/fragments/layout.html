@@ -20,14 +20,12 @@
             
             <div sec:authorize="hasAuthority('STUDENT')">
                 <li class="nav-item">
-                    <a th:href="@{/student/dashboard}" class="nav-link mb-2" 
-                       th:classappend="${currentUri != null && currentUri.startsWith('/student/dashboard')} ? 'active'">
+                    <a th:href="@{/student/dashboard}" class="nav-link mb-2 text-dark">
                         <i class="fa-solid fa-house me-2"></i> Trang chủ
                     </a>
                 </li>
                 <li>
-                    <a th:href="@{/student/create-question}" class="nav-link mb-2"
-                       th:classappend="${currentUri != null && currentUri.startsWith('/student/create')} ? 'active'">
+                    <a th:href="@{/student/create-question}" class="nav-link mb-2 text-dark">
                         <i class="fa-solid fa-circle-question me-2"></i> Đặt câu hỏi
                     </a>
                 </li>
@@ -36,21 +34,19 @@
             <div sec:authorize="hasAnyAuthority('ADMIN', 'ADVISOR')">
                 
                 <li class="nav-item">
-                     <a th:href="@{/admin/dashboard}" class="nav-link mb-2"
-                       th:classappend="${currentUri != null && currentUri.startsWith('/admin/dashboard')} ? 'active'">
+                     <a th:href="@{/admin/dashboard}" class="nav-link mb-2 text-dark">
                         <i class="fa-solid fa-inbox me-2"></i> Tiếp nhận câu hỏi
                     </a>
                 </li>
                 
                 <li class="nav-item" sec:authorize="hasAuthority('ADMIN')">
-                    <a th:href="@{/admin/users}" class="nav-link mb-2"
-                       th:classappend="${currentUri != null && currentUri.startsWith('/admin/users')} ? 'active'">
+                    <a th:href="@{/admin/users}" class="nav-link mb-2 text-dark">
                         <i class="fa-solid fa-users-gear me-2"></i> Quản lý Users
                     </a>
                 </li>
 
                 <li class="nav-item" sec:authorize="hasAuthority('ADMIN')">
-                    <a href="#" class="nav-link mb-2 text-dark">
+                    <a th:href="@{/admin/departments}" class="nav-link mb-2 text-dark">
                         <i class="fa-solid fa-sitemap me-2"></i> Quản lý Phòng ban
                     </a>
                 </li>
@@ -71,8 +67,6 @@
                     </div>
                 </a>
                 <ul class="dropdown-menu text-small shadow">
-                    <li><a class="dropdown-item" href="#">Hồ sơ cá nhân</a></li>
-                    <li><hr class="dropdown-divider"></li>
                     <li>
                         <form th:action="@{/logout}" method="post">
                             <button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
