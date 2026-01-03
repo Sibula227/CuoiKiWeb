@@ -5,15 +5,15 @@ import com.hcmute.qaute.dto.QuestionResponseDTO;
 import com.hcmute.qaute.entity.Department;
 import com.hcmute.qaute.entity.User;
 import com.hcmute.qaute.entity.enums.QuestionStatus;
-import com.hcmute.qaute.repository.DepartmentRepository; // <--- Thêm mới
-import com.hcmute.qaute.repository.RoleRepository;       // <--- Thêm mới
+import com.hcmute.qaute.repository.DepartmentRepository;
+import com.hcmute.qaute.repository.RoleRepository;
 import com.hcmute.qaute.repository.UserRepository;
 import com.hcmute.qaute.service.AnswerService;
 import com.hcmute.qaute.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder; // <--- Thêm mới
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,13 +30,11 @@ public class AdminController {
     @Autowired private AnswerService answerService;
     @Autowired private UserRepository userRepository;
 
-    // --- BỔ SUNG CÁC DEPENDENCY MỚI ---
     @Autowired private RoleRepository roleRepository;
     @Autowired private DepartmentRepository departmentRepository;
     @Autowired private PasswordEncoder passwordEncoder;
-    // ----------------------------------
 
-    // 1. DASHBOARD (Giữ nguyên)
+    // 1. DASHBOARD
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) { 
         List<QuestionResponseDTO> allQuestions = questionService.getQuestionsForDashboard(authentication.getName());
@@ -48,7 +46,7 @@ public class AdminController {
         return "admin/dashboard"; 
     }
 
-    // 2. LIST USERS (Giữ nguyên)
+    // 2. LIST USERS
     @GetMapping("/users")
     @PreAuthorize("hasAuthority('ADMIN')")
     public String manageUsers(Model model) {
@@ -57,16 +55,16 @@ public class AdminController {
         return "admin/users"; 
     }
 
-    // --- 3. CÁC HÀM CRUD USER (THÊM MỚI VÀO ĐÂY) ---
+    // --- 3. CÁC HÀM CRUD USER ---
 
     // 3.1 Hiển thị Form Thêm mới
     @GetMapping("/users/create")
     @PreAuthorize("hasAuthority('ADMIN')")
     public String showCreateUserForm(Model model) {
-        model.addAttribute("user", new User()); // Object rỗng
-        model.addAttribute("roles", roleRepository.findAll()); // List roles cho dropdown
-        model.addAttribute("departments", departmentRepository.findAll()); // List departments cho dropdown
-        return "admin/user_form"; // Trả về file user_form.html
+        model.addAttribute("user", new User());
+        model.addAttribute("roles", roleRepository.findAll());
+        model.addAttribute("departments", departmentRepository.findAll());
+        return "admin/user_form";
     }
 
     // 3.2 Hiển thị Form Edit
@@ -78,62 +76,39 @@ public class AdminController {
             ra.addFlashAttribute("errorMessage", "User không tồn tại!");
             return "redirect:/admin/users";
         }
-        
-        // Mẹo: Set password rỗng để không hiển thị hash lên form
-        // user.setPasswordHash(""); 
-        
         model.addAttribute("user", user);
         model.addAttribute("roles", roleRepository.findAll());
         model.addAttribute("departments", departmentRepository.findAll());
         return "admin/user_form";
     }
 
-    // 3.3 Lưu User (Chạy cho cả Create và Edit)
+    // 3.3 Lưu User (Create & Edit)
     @PostMapping("/users/save")
     @PreAuthorize("hasAuthority('ADMIN')")
     public String saveUser(@ModelAttribute("user") User user, RedirectAttributes ra) {
-        // Logic xử lý mật khẩu
         if (user.getId() == null) {
-            // Trường hợp thêm mới: Bắt buộc mã hóa pass
             user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
             user.setIsActive(true);
         } else {
-            // Trường hợp Edit:
             User existingUser = userRepository.findById(user.getId()).orElse(null);
             if (existingUser != null) {
                 if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
-                    // Nếu không nhập pass mới -> Giữ nguyên pass cũ
                     user.setPasswordHash(existingUser.getPasswordHash());
                 } else {
-                    // Nếu nhập pass mới -> Mã hóa
                     user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
                 }
-                // Giữ nguyên các trường không có trên form (nếu có)
                 user.setIsActive(existingUser.getIsActive()); 
                 user.setCreatedAt(existingUser.getCreatedAt());
             }
         }
-        
         userRepository.save(user);
         ra.addFlashAttribute("successMessage", "Lưu người dùng thành công!");
         return "redirect:/admin/users";
     }
 
-    // 3.4 Xóa User
-    @GetMapping("/users/delete/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public String deleteUser(@PathVariable Long id, RedirectAttributes ra) {
-        try {
-            userRepository.deleteById(id);
-            ra.addFlashAttribute("successMessage", "Đã xóa người dùng!");
-        } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "Không thể xóa user này (có thể do ràng buộc dữ liệu).");
-        }
-        return "redirect:/admin/users";
-    }
-    // -----------------------------------------------
+    // --- ĐÃ XÓA HÀM DELETE USER CŨ TẠI ĐÂY ĐỂ TRÁNH LỖI ---
 
-    // 4. CÁC HÀM XỬ LÝ CÂU HỎI (Giữ nguyên)
+    // 4. CÁC HÀM XỬ LÝ CÂU HỎI
     @GetMapping("/question/{id}")
     public String viewQuestionToAnswer(@PathVariable Long id, Model model) {
         QuestionResponseDTO question = questionService.getQuestionDetail(id);
@@ -161,29 +136,30 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
             return "redirect:/admin/question/" + id;
         }
-        
     }
- // 5.1 Danh sách phòng ban
+
+    // 5. QUẢN LÝ PHÒNG BAN
+
+    // 5.1 Danh sách
     @GetMapping("/departments")
     @PreAuthorize("hasAuthority('ADMIN')")
     public String manageDepartments(Model model) {
         model.addAttribute("departments", departmentRepository.findAll());
-        return "admin/departments"; // Trả về file departments.html
+        return "admin/departments";
     }
 
-    // 5.2 Form Thêm mới
+    // 5.2 Form Thêm
     @GetMapping("/departments/create")
     @PreAuthorize("hasAuthority('ADMIN')")
     public String showCreateDepartmentForm(Model model) {
         model.addAttribute("department", new Department());
-        return "admin/department_form"; // Trả về file department_form.html
+        return "admin/department_form";
     }
 
     // 5.3 Form Edit
     @GetMapping("/departments/edit/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public String showEditDepartmentForm(@PathVariable Integer id, Model model, RedirectAttributes ra) {
-        // Lưu ý: ID của Department là Integer
         Department dept = departmentRepository.findById(id).orElse(null);
         if (dept == null) {
             ra.addFlashAttribute("errorMessage", "Phòng ban không tồn tại!");
@@ -193,7 +169,7 @@ public class AdminController {
         return "admin/department_form";
     }
 
-    // 5.4 Lưu (Chung cho Create và Edit)
+    // 5.4 Lưu
     @PostMapping("/departments/save")
     @PreAuthorize("hasAuthority('ADMIN')")
     public String saveDepartment(@ModelAttribute("department") Department department, RedirectAttributes ra) {
@@ -206,14 +182,27 @@ public class AdminController {
         return "redirect:/admin/departments";
     }
 
- // 5.5 Xóa User (ĐÃ NÂNG CẤP BẢO MẬT)
+    // 5.5 Xóa Phòng ban
+    @GetMapping("/departments/delete/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public String deleteDepartment(@PathVariable Integer id, RedirectAttributes ra) {
+        try {
+            departmentRepository.deleteById(id);
+            ra.addFlashAttribute("successMessage", "Đã xóa phòng ban!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Không thể xóa phòng ban này vì đang có dữ liệu liên quan!");
+        }
+        return "redirect:/admin/departments";
+    }
+
+    // 6. XÓA USER (PHIÊN BẢN MỚI - BẢO MẬT CAO)
+    // Đây là hàm duy nhất xử lý xóa user
     @GetMapping("/users/delete/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public String deleteUser(@PathVariable Long id, 
                              RedirectAttributes ra, 
-                             Authentication authentication) { // <-- Thêm Authentication để biết ai đang xóa
+                             Authentication authentication) {
         
-        // 1. Tìm User cần xóa
         User userToDelete = userRepository.findById(id).orElse(null);
         
         if (userToDelete == null) {
@@ -221,15 +210,14 @@ public class AdminController {
             return "redirect:/admin/users";
         }
 
-        // 2. DEFENSE 1: Không cho phép tự xóa chính mình
-        // So sánh username của người đang đăng nhập với user cần xóa
+        // DEFENSE 1: Chặn tự xóa
         String currentUsername = authentication.getName();
         if (userToDelete.getUsername().equals(currentUsername)) {
             ra.addFlashAttribute("errorMessage", "Bạn không thể tự xóa tài khoản của chính mình!");
             return "redirect:/admin/users";
         }
 
-        // 3. DEFENSE 2: Nếu user cần xóa là ADMIN, phải kiểm tra xem có phải Admin cuối cùng không
+        // DEFENSE 2: Chặn xóa Admin cuối cùng
         if (userToDelete.getRole().getCode().equals("ADMIN")) {
             long adminCount = userRepository.countByRole_Code("ADMIN");
             if (adminCount <= 1) {
@@ -238,12 +226,11 @@ public class AdminController {
             }
         }
 
-        // 4. Nếu vượt qua hết các bước kiểm tra thì mới xóa
         try {
             userRepository.deleteById(id);
             ra.addFlashAttribute("successMessage", "Đã xóa người dùng: " + userToDelete.getUsername());
         } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "Lỗi hệ thống: Không thể xóa user này (có thể do ràng buộc dữ liệu).");
+            ra.addFlashAttribute("errorMessage", "Lỗi hệ thống: Không thể xóa user này.");
         }
         
         return "redirect:/admin/users";
