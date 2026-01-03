@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{fragments/layout :: head_fragment}"></head>
 
 <body>
+
     <div th:replace="~{fragments/layout :: main_content(~{::#form-content})}">
         
         <div id="form-content">
@@ -16,44 +18,57 @@
                         <input type="hidden" th:field="*{id}">
                         
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Username</label>
+                            <label class="form-label fw-bold">Username (Tên đăng nhập)</label>
                             <input type="text" class="form-control" th:field="*{username}" required 
-                                   th:readonly="${user.id != null}">
+                                   th:readonly="${user.id != null}"
+                                   placeholder="VD: nguyenvana">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Họ và Tên</label>
-                            <input type="text" class="form-control" th:field="*{fullName}" required>
+                            <input type="text" class="form-control" th:field="*{fullName}" required
+                                   placeholder="VD: Nguyễn Văn A">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Email</label>
-                            <input type="email" class="form-control" th:field="*{email}" required>
+                            <input type="email" class="form-control" th:field="*{email}" required
+                                   placeholder="example@hcmute.edu.vn">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Mật khẩu</label>
                             <input type="password" class="form-control" th:field="*{passwordHash}" 
                                    th:required="${user.id == null}"
-                                   placeholder="Nhập mật khẩu mới (để trống nếu giữ nguyên)">
+                                   placeholder="Để trống nếu không muốn đổi mật khẩu">
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Vai trò</label>
-                                <select class="form-select" th:field="*{role}" required>
+                                <select class="form-select" th:field="*{role}" required id="roleSelect" onchange="toggleFields()">
                                     <option value="" disabled selected>-- Chọn vai trò --</option>
-                                    <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.description}"></option>
+                                    <option th:each="r : ${roles}" 
+                                            th:value="${r.id}" 
+                                            th:text="${r.description}"
+                                            th:data-code="${r.code}"></option>
                                 </select>
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-3" id="dept-container">
                                 <label class="form-label fw-bold">Phòng ban (Dành cho Advisor)</label>
                                 <select class="form-select" th:field="*{department}">
                                     <option value="">-- Không thuộc phòng ban --</option>
                                     <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name}"></option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div class="mb-3 p-3 bg-light border rounded" id="mssv-container" style="display: none;">
+                            <label class="form-label fw-bold text-primary">Mã số sinh viên (Bắt buộc cho SV)</label>
+                            <input type="text" class="form-control" th:field="*{studentIdCode}" id="mssvInput"
+                                   placeholder="VD: 2011037">
+                            <div class="form-text">Mã số này dùng để định danh sinh viên trong hệ thống.</div>
                         </div>
 
                         <div class="d-flex justify-content-end mt-3">
@@ -65,6 +80,50 @@
                 </div>
             </div>
         </div>
+        
+        <script>
+            function toggleFields() {
+                const roleSelect = document.getElementById('roleSelect');
+                const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+                const roleCode = selectedOption.getAttribute('data-code'); // Lấy mã role (ADMIN, STUDENT, ADVISOR)
+                
+                const mssvContainer = document.getElementById('mssv-container');
+                const deptContainer = document.getElementById('dept-container');
+                const mssvInput = document.getElementById('mssvInput');
+
+                // Logic 1: Nếu là STUDENT -> Hiện MSSV, Ẩn Phòng ban
+                if (roleCode === 'STUDENT') {
+                    mssvContainer.style.display = 'block';
+                    mssvInput.setAttribute('required', 'required'); // Bắt buộc nhập
+                    deptContainer.style.opacity = '0.5'; // Làm mờ phòng ban cho dễ hiểu
+                    deptContainer.style.pointerEvents = 'none'; // Không cho chọn phòng ban
+                } 
+                // Logic 2: Nếu là ADVISOR -> Ẩn MSSV, Hiện Phòng ban
+                else if (roleCode === 'ADVISOR') {
+                    mssvContainer.style.display = 'none';
+                    mssvInput.removeAttribute('required');
+                    mssvInput.value = ''; // Xóa MSSV thừa
+                    
+                    deptContainer.style.opacity = '1';
+                    deptContainer.style.pointerEvents = 'auto';
+                }
+                // Logic 3: Các role khác (ADMIN) -> Ẩn hết
+                else {
+                    mssvContainer.style.display = 'none';
+                    mssvInput.removeAttribute('required');
+                    
+                    deptContainer.style.opacity = '1';
+                    deptContainer.style.pointerEvents = 'auto';
+                }
+            }
+
+            // Chạy hàm này khi trang vừa load (để xử lý trường hợp Edit User)
+            document.addEventListener("DOMContentLoaded", function() {
+                toggleFields();
+            });
+        </script>
+        
     </div>
+
 </body>
 </html>

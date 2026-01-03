@@ -44,8 +44,6 @@ public class QuestionServiceImpl implements QuestionService {
         question.setStudentCohort(dto.getCohort());
 
         if (dto.getDepartmentId() != null) {
-            // --- SỬA LỖI TẠI ĐÂY ---
-            // Bỏ Long.valueOf(), dùng trực tiếp Integer
             Department dept = departmentRepository.findById(dto.getDepartmentId())
                     .orElseThrow(() -> new RuntimeException("Phòng ban không tồn tại!"));
             question.setDepartment(dept);
@@ -81,9 +79,6 @@ public class QuestionServiceImpl implements QuestionService {
         } 
         else if ("ADVISOR".equals(roleCode)) {
             if (currentUser.getDepartment() != null) {
-                // Sửa: Lấy ID kiểu Integer nếu Department dùng Integer
-                // Tuy nhiên findByDepartmentId trong QuestionRepository có thể đang để Long
-                // Để an toàn, ta dùng Long.valueOf() nếu bên kia cần Long
                 Long deptId = Long.valueOf(currentUser.getDepartment().getId());
                 list = questionRepository.findByDepartmentId(deptId);
             } else {
@@ -116,6 +111,7 @@ public class QuestionServiceImpl implements QuestionService {
         return mapToDTO(q);
     }
     
+    // --- HÀM CHUYỂN ĐỔI ENTITY -> DTO (QUAN TRỌNG) ---
     private QuestionResponseDTO mapToDTO(Question q) {
         QuestionResponseDTO dto = new QuestionResponseDTO();
         dto.setId(q.getId());
@@ -129,14 +125,18 @@ public class QuestionServiceImpl implements QuestionService {
         dto.setStudentFaculty(q.getStudentFaculty());
         dto.setStudentCohort(q.getStudentCohort());
 
+        // Mapping thông tin sinh viên
         if (q.getStudent() != null) {
             dto.setStudentId(q.getStudent().getId());
             dto.setStudentName(q.getStudent().getFullName());
             dto.setStudentAvatar(q.getStudent().getAvatarUrl());
+            
+            // --- [ĐÃ BỔ SUNG] Lấy MSSV thật để hiện lên Dashboard ---
+            dto.setStudentIdCode(q.getStudent().getStudentIdCode());
+            // --------------------------------------------------------
         }
 
         if (q.getDepartment() != null) {
-            // Sửa: Department ID là Integer, DTO cũng nên là Integer
             dto.setDepartmentId(q.getDepartment().getId()); 
             dto.setDepartmentName(q.getDepartment().getName());
         }

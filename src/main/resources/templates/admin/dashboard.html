@@ -73,8 +73,11 @@
                                              class="rounded-circle me-2" width="35" height="35">
                                         <div>
                                             <div class="fw-bold text-dark" th:text="${q.studentName}">SV A</div>
-                                            <small class="text-muted" style="font-size: 0.8rem;">MSSV: <span th:text="${q.studentId}"></span></small>
-                                        </div>
+                                            
+                                            <small class="text-muted" style="font-size: 0.8rem;" th:if="${q.studentIdCode != null}">
+                                                MSSV: <span th:text="${q.studentIdCode}"></span>
+                                            </small>
+                                            </div>
                                     </div>
                                 </td>
                                 <td>

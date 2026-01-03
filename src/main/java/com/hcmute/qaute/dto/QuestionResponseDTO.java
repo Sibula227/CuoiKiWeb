@@ -13,14 +13,16 @@ public class QuestionResponseDTO {
     private String content;
     
     // Thông tin người hỏi
-    private Long studentId;
+    private Long studentId;      // ID trong database (dùng để link)
     private String studentName;
     private String studentAvatar;
 
-    // --- BỔ SUNG 2 DÒNG NÀY ---
+    // --- THÊM DÒNG QUAN TRỌNG NÀY ---
+    private String studentIdCode; // Chứa MSSV thật (VD: 2011037)
+    // --------------------------------
+
     private String studentFaculty; // Khoa
     private String studentCohort;  // Khóa
-    // --------------------------
 
     // Thông tin phòng ban
     private Integer departmentId;

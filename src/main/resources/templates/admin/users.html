@@ -9,18 +9,17 @@
         
         <div id="main-content-body">
             
-            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
                 <i class="fa-solid fa-circle-check me-2"></i><span th:text="${successMessage}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
                 <i class="fa-solid fa-triangle-exclamation me-2"></i><span th:text="${errorMessage}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-success fw-bold"><i class="fa-solid fa-users-gear me-2"></i>Quản lý Người dùng</h2>
-                
                 <a th:href="@{/admin/users/create}" class="btn btn-primary shadow-sm">
                     <i class="fa-solid fa-plus me-2"></i>Thêm mới User
                 </a>
@@ -31,9 +30,9 @@
                     <table class="table table-hover table-striped mb-0 align-middle">
                         <thead class="table-success">
                             <tr>
-                                <th class="py-3 ps-3">ID</th>
+                                <th class="py-3 ps-3">STT</th> 
+                                <th class="py-3">MSSV</th>
                                 <th class="py-3">Thông tin User</th>
-                                <th class="py-3">Email</th>
                                 <th class="py-3">Vai trò</th>
                                 <th class="py-3">Phòng ban</th>
                                 <th class="py-3">Trạng thái</th>
@@ -41,21 +40,27 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="user : ${users}">
-                                <td class="ps-3 fw-bold text-secondary" th:text="${user.id}">1</td>
+                            <tr th:each="user, iterStat : ${users}">
                                 
+                                <td class="ps-3 fw-bold text-secondary" th:text="${iterStat.count}">1</td>
+                                
+                                <td>
+                                    <span th:if="${user.studentIdCode != null}" 
+                                          class="badge bg-light text-dark border border-secondary" 
+                                          th:text="${user.studentIdCode}">2011037</span>
+                                    <span th:unless="${user.studentIdCode != null}" class="text-muted small">--</span>
+                                </td>
+
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <img th:src="${user.avatarUrl != null ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + user.fullName + '&background=random'}" 
                                              class="rounded-circle me-3 border" width="40" height="40">
                                         <div>
                                             <div class="fw-bold text-dark" th:text="${user.fullName}">Tên User</div>
-                                            <small class="text-muted" th:text="'@' + ${user.username}">username</small>
+                                            <small class="text-muted" th:text="${user.email}">email</small>
                                         </div>
                                     </div>
                                 </td>
-                                
-                                <td th:text="${user.email}">email@example.com</td>
                                 
                                 <td>
                                     <span class="badge rounded-pill"
@@ -84,7 +89,7 @@
                                     </a>
                                     
                                     <a th:href="@{/admin/users/delete/{id}(id=${user.id})}" class="btn btn-sm btn-outline-danger" title="Xóa" 
-                                       onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này không? Hành động này không thể hoàn tác!')">
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa user này không?')">
                                         <i class="fa-solid fa-trash"></i>
                                     </a>
                                 </td>
@@ -98,7 +103,8 @@
                 Hiển thị toàn bộ <span th:text="${users.size()}"></span> người dùng.
             </div>
 
-        </div> </div>
+        </div> 
+    </div>
 
 </body>
 </html>
