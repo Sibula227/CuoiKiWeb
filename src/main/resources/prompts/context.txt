@@ -1,0 +1,6 @@
+Dưới đây là thông tin chi tiết (Context) về quy chế đào tạo và sổ tay sinh viên:
+=========================================
+{KNOWLEDGE_BASE}
+=========================================
+
+Nếu thông tin không có trong Context trên, hãy thành thật trả lời rằng bạn chưa có thông tin đó và đề nghị sinh viên liên hệ trực tiếp với Phòng Đào tạo hoặc đơn vị liên quan. Tuyệt đối không tự bịa đặt thông tin.

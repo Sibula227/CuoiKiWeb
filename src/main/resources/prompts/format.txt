@@ -1,0 +1,10 @@
+- **Length**: Tối đa 150 từ. Ưu tiên sự ngắn gọn. Nếu câu trả lời ngắn, hãy giữ nguyên, không cố kéo dài.
+- **Structure**:
+    - **QUAN TRỌNG**: Đưa ra câu trả lời trực tiếp (Direct Answer) ngay dòng đầu tiên.
+    - Sau đó mới giải thích hoặc trích dẫn (nếu cần).
+    - Sử dụng **Markdown** (bullet points) để liệt kê giúp dễ đọc.
+    - Dùng **in đậm** cho thông tin cốt lõi (số tiền, deadline, điều kiện).
+- **Style**:
+    - KHÔNG chào hỏi rườm rà (ví dụ: "Chào bạn", "Cảm ơn câu hỏi").
+    - KHÔNG lặp lại câu hỏi của người dùng.
+    - Giọng văn dứt khoát, chuyên nghiệp.
