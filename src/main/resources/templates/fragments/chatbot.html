@@ -235,6 +235,10 @@
         </div>
     </div>
 
+    <!-- Import Marked & DOMPurify for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
     <script>
         const chatbotToggler = document.querySelector(".chatbot-toggler");
         const closeBtn = document.querySelector(".close-btn");
@@ -250,6 +254,7 @@
             chatLi.classList.add("chat", className);
             let chatContent = className === "outgoing" ? `<p></p>` : `<span class="material-symbols-outlined"><i class="fa-solid fa-robot"></i></span><p></p>`;
             chatLi.innerHTML = chatContent;
+            // Outgoing message is plain text
             chatLi.querySelector("p").textContent = message;
             return chatLi;
         }
@@ -274,7 +279,10 @@
                     return res.json();
                 })
                 .then(data => {
-                    messageElement.textContent = data.response;
+                    // Parse markdown and sanitize
+                    const rawHtml = marked.parse(data.response);
+                    const safeHtml = DOMPurify.sanitize(rawHtml);
+                    messageElement.innerHTML = safeHtml;
                 }).catch((error) => {
                     console.error("Chat Error:", error);
                     messageElement.textContent = "Xin lỗi, đã có lỗi xảy ra. (Chi tiết trong Console F12)";
