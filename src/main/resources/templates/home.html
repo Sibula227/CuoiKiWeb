@@ -110,6 +110,18 @@
                             <i class="fa-solid fa-building-columns me-2"></i> <span th:text="${dept.name}">Khoa</span>
                         </a>
                     </div>
+
+                    <!-- POPULAR TAGS (NEW) -->
+                    <h6 class="fw-bold text-uppercase text-muted ls-1 mb-3">Chủ đề nổi bật</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <a th:each="tag : ${#strings.arraySplit('hoc-phi,lich-thi,tot-nghiep,bao-hiem,ktx', ',')}"
+                            th:href="@{/(tag=${tag}, sort=${currentSort})}"
+                            onclick="loadContent(event, this.getAttribute('href'))"
+                            class="badge rounded-pill text-decoration-none py-2 px-3 border"
+                            th:classappend="${currentTag == tag} ? 'bg-success text-white' : 'bg-white text-dark hover-success-bg'">
+                            #<span th:text="${tag}">tag</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -118,11 +130,11 @@
                     <h4 class="fw-bold"><i class="fa-regular fa-comments me-2 text-success"></i>Thảo luận mới nhất</h4>
                     <select class="form-select w-auto border-0 shadow-sm glass-card"
                         onchange="loadContent(null, this.value)">
-                        <option th:value="@{/(dept=${currentDeptId}, sort='newest')}"
+                        <option th:value="@{/(dept=${currentDeptId}, sort='newest', tag=${currentTag})}"
                             th:selected="${currentSort == 'newest' || currentSort == null}">Mới nhất</option>
-                        <option th:value="@{/(dept=${currentDeptId}, sort='popular')}"
+                        <option th:value="@{/(dept=${currentDeptId}, sort='popular', tag=${currentTag})}"
                             th:selected="${currentSort == 'popular'}">Phổ biến nhất</option>
-                        <option th:value="@{/(dept=${currentDeptId}, sort='unanswered')}"
+                        <option th:value="@{/(dept=${currentDeptId}, sort='unanswered', tag=${currentTag})}"
                             th:selected="${currentSort == 'unanswered'}">Chưa trả lời</option>
                     </select>
                 </div>
@@ -160,6 +172,14 @@
                             <p class="text-muted text-truncate mb-3" style="max-width: 700px;" th:text="${q.content}">
                                 Nội dung tóm tắt...
                             </p>
+
+                            <!-- TAGS DISPLAY (NEW) -->
+                            <div class="mb-3 d-flex flex-wrap gap-2"
+                                th:if="${q.tagsCached != null && !q.tagsCached.isEmpty()}">
+                                <span th:each="t : ${#strings.arraySplit(q.tagsCached, ',')}"
+                                    class="badge bg-light text-secondary border">#<span
+                                        th:text="${t.trim()}">tag</span></span>
+                            </div>
 
                             <div class="d-flex align-items-center gap-3">
                                 <span class="badge bg-light text-dark border px-3 py-2">

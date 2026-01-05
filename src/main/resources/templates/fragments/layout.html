@@ -20,6 +20,38 @@
                 <span class="fs-4 fw-bold text-success"><i class="fa-solid fa-leaf me-2"></i>QAUTE</span>
             </a>
 
+            <!-- Notification Bell (Mobile/Sidebar version) -->
+            <div class="px-3 mb-2">
+                <div sec:authorize="isAuthenticated()" class="dropdown w-100">
+                    <button
+                        class="btn btn-light w-100 text-start d-flex align-items-center justify-content-between border shadow-sm"
+                        data-bs-toggle="dropdown">
+                        <span><i class="fa-solid fa-bell text-warning me-2"></i> Thông báo</span>
+                        <span class="badge bg-danger rounded-pill" th:if="${unreadNotificationCount > 0}"
+                            th:text="${unreadNotificationCount}">3</span>
+                    </button>
+                    <ul class="dropdown-menu shadow border-0 w-100 p-0" style="max-height: 400px; overflow-y: auto;">
+                        <li class="p-2 border-bottom fw-bold text-muted bg-light small">Thông báo mới nhất</li>
+
+                        <li th:if="${latestNotifications == null || latestNotifications.isEmpty()}"
+                            class="p-3 text-center text-muted small">
+                            Không có thông báo mới
+                        </li>
+
+                        <li th:each="notif : ${latestNotifications}">
+                            <a th:href="@{'/notification/read/' + ${notif.id}}"
+                                class="dropdown-item p-3 text-wrap border-bottom"
+                                th:classappend="${!notif.isRead} ? 'bg-light fw-bold' : ''">
+                                <small class="text-muted d-block mb-1"
+                                    th:text="${#temporals.format(notif.createdAt, 'HH:mm dd/MM')}">10:00</small>
+                                <span th:text="${notif.body}">Nội dung thông báo...</span>
+                            </a>
+                        </li>
+                        <li><a class="dropdown-item text-center small text-primary py-2" href="#">Xem tất cả</a></li>
+                    </ul>
+                </div>
+            </div>
+
             <ul class="nav nav-pills flex-column mb-auto p-3">
 
                 <div sec:authorize="hasAuthority('STUDENT')">

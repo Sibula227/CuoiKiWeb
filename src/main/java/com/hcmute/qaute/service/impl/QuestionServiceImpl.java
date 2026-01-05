@@ -29,8 +29,16 @@ public class QuestionServiceImpl implements QuestionService {
     @Autowired
     private DepartmentRepository departmentRepository;
 
+    @Autowired
+    private com.hcmute.qaute.service.TagService tagService;
+
+    @Autowired
+    private com.hcmute.qaute.repository.AttachmentRepository attachmentRepository;
+
     @Override
-    public QuestionResponseDTO createQuestion(QuestionCreateDTO dto, String username) {
+    @org.springframework.transaction.annotation.Transactional
+    public QuestionResponseDTO createQuestion(QuestionCreateDTO dto, String username, String tagInput,
+            org.springframework.web.multipart.MultipartFile[] files) {
         User student = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
@@ -49,8 +57,57 @@ public class QuestionServiceImpl implements QuestionService {
             question.setDepartment(dept);
         }
 
+        // --- 1. Xử lý Tags ---
+        if (tagInput != null && !tagInput.trim().isEmpty()) {
+            java.util.Set<com.hcmute.qaute.entity.Tag> tags = tagService.processTags(tagInput);
+            question.setTags(tags);
+            question.setTagsCached(
+                    tags.stream().map(com.hcmute.qaute.entity.Tag::getSlug).collect(Collectors.joining(", ")));
+        }
+        // ---------------------
+
         question.setCreatedAt(LocalDateTime.now());
         Question saved = questionRepository.save(question);
+
+        // --- 2. Xử lý Attachments ---
+        if (files != null && files.length > 0) {
+            for (org.springframework.web.multipart.MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    try {
+                        // Lưu file vào thư mục upload
+                        String uploadDir = "src/main/resources/static/uploads/";
+                        // Tạo thư mục nếu chưa tồn tại
+                        java.io.File dir = new java.io.File(uploadDir);
+                        if (!dir.exists())
+                            dir.mkdirs();
+
+                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                        String filePath = uploadDir + fileName;
+
+                        // Copy file
+                        java.nio.file.Files.copy(file.getInputStream(), java.nio.file.Paths.get(filePath),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+                        // Tạo Entity
+                        com.hcmute.qaute.entity.Attachment attachment = new com.hcmute.qaute.entity.Attachment();
+                        attachment.setFilename(file.getOriginalFilename());
+                        attachment.setStoragePath("/uploads/" + fileName);
+                        attachment.setFileSize(file.getSize());
+                        attachment.setContentType(file.getContentType());
+                        attachment.setUploadedBy(student);
+                        attachment.setQuestion(saved);
+
+                        attachmentRepository.save(attachment);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        // Chấp nhận lỗi file lẻ, không rollback để tránh mất câu hỏi
+                    }
+                }
+            }
+        }
+        // -----------------------------
+
         return mapToDTO(saved);
     }
 
@@ -89,8 +146,6 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         if (list != null && !list.isEmpty()) {
-            // Fix: Create a mutable list to avoid UnsupportedOperationException if list is
-            // immutable
             List<Question> mutableList = new ArrayList<>(list);
             mutableList.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
             list = mutableList;
@@ -122,8 +177,6 @@ public class QuestionServiceImpl implements QuestionService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        // Use an arbitrarily large page size or unpaged to get all results for now
-        // Since the interface expects a List, we'll convert the Page result.
         org.springframework.data.domain.Page<Question> pageResult = questionRepository.searchByKeyword(keyword,
                 org.springframework.data.domain.PageRequest.of(0, 50));
 
@@ -132,7 +185,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<QuestionResponseDTO> getFilterQuestions(Integer departmentId, String sort) {
+    public List<QuestionResponseDTO> getFilterQuestions(Integer departmentId, String sort, String tag) {
         org.springframework.data.domain.Pageable pageable;
 
         // 1. Xác định Sort
@@ -140,8 +193,6 @@ public class QuestionServiceImpl implements QuestionService {
             pageable = org.springframework.data.domain.PageRequest.of(0, 50,
                     org.springframework.data.domain.Sort.by("viewCount").descending());
         } else if ("unanswered".equalsIgnoreCase(sort)) {
-            // Với "unanswered", ta có thể sort theo cũ nhất hoặc lọc theo status.
-            // Ở đây ưu tiên sort cũ nhất để advisors thấy việc cần làm
             pageable = org.springframework.data.domain.PageRequest.of(0, 50,
                     org.springframework.data.domain.Sort.by("createdAt").ascending());
         } else {
@@ -150,27 +201,28 @@ public class QuestionServiceImpl implements QuestionService {
                     org.springframework.data.domain.Sort.by("createdAt").descending());
         }
 
+        List<Question> list;
         org.springframework.data.domain.Page<Question> pageResult;
 
         // 2. Query
         if (departmentId != null) {
             pageResult = questionRepository.findByDepartmentId(departmentId, pageable);
+            list = pageResult.getContent();
         } else {
-            // NẾU là "unanswered", ta có thể filter thêm status PENDING
-            if ("unanswered".equalsIgnoreCase(sort)) {
-                // Để đơn giản, ta tìm tất cả rồi filter bằng stream hoặc custom query.
-                // Nhưng tốt nhất làm query riêng. Tạm thời dùng findByStatus ở Repos nếu cần
-                // chính xác.
-                // Ở đây ta chấp nhận sort theo cũ nhất như logic trên.
-                pageResult = questionRepository.findAll(pageable);
-            } else {
-                pageResult = questionRepository.findAll(pageable);
-            }
+            pageResult = questionRepository.findAll(pageable);
+            list = new ArrayList<>(pageResult.getContent());
         }
 
-        // 3. Filter thêm nếu cần (VD: status)
-        List<Question> list = pageResult.getContent();
+        // 3. Filter thêm
 
+        // Filter by Tag
+        if (tag != null && !tag.isEmpty()) {
+            list = list.stream()
+                    .filter(q -> q.getTagsCached() != null && q.getTagsCached().contains(tag))
+                    .collect(Collectors.toList());
+        }
+
+        // Filter by Status if Sort is 'unanswered'
         if ("unanswered".equalsIgnoreCase(sort)) {
             list = list.stream()
                     .filter(q -> q.getStatus() == QuestionStatus.PENDING)
@@ -211,7 +263,13 @@ public class QuestionServiceImpl implements QuestionService {
             dto.setDepartmentName(q.getDepartment().getName());
         }
 
+        // --- MAPPING MỚI (TAGS & ATTACHMENTS) ---
+        dto.setTagsCached(q.getTagsCached());
+        dto.setAttachments(q.getAttachments());
+        // ----------------------------------------
+
         return dto;
+
     }
 
     private String calculateTimeAgo(LocalDateTime createdAt) {

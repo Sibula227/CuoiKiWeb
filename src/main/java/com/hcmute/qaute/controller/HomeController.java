@@ -24,11 +24,12 @@ public class HomeController {
     public String homePage(
             @org.springframework.web.bind.annotation.RequestParam(name = "dept", required = false) Integer deptId,
             @org.springframework.web.bind.annotation.RequestParam(name = "sort", required = false) String sort,
+            @org.springframework.web.bind.annotation.RequestParam(name = "tag", required = false) String tag,
             @org.springframework.web.bind.annotation.RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
             Model model) {
 
         // 1. Lấy danh sách câu hỏi đã filter
-        List<QuestionResponseDTO> questions = questionService.getFilterQuestions(deptId, sort);
+        List<QuestionResponseDTO> questions = questionService.getFilterQuestions(deptId, sort, tag);
         model.addAttribute("questions", questions);
 
         // 2. Lấy danh sách Department cho Sidebar
@@ -37,6 +38,7 @@ public class HomeController {
         // 3. Truyền lại params để UI highlight
         model.addAttribute("currentDeptId", deptId);
         model.addAttribute("currentSort", sort);
+        model.addAttribute("currentTag", tag);
 
         // Trả về Fragment nếu là AJAX Request
         if ("XMLHttpRequest".equals(requestedWith)) {

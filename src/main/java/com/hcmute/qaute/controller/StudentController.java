@@ -23,10 +23,10 @@ public class StudentController {
 
     @Autowired
     private QuestionService questionService;
-    
+
     @Autowired
     private DepartmentService departmentService;
-    
+
     @Autowired
     private AnswerService answerService;
 
@@ -41,19 +41,19 @@ public class StudentController {
                 model.addAttribute("errorMessage", "Bạn cần đăng nhập để truy cập trang này.");
                 return "redirect:/login";
             }
-            
+
             // Lấy username người đang login
-            String username = authentication.getName(); 
-            
+            String username = authentication.getName();
+
             // Gọi Service lấy danh sách câu hỏi của user này
             List<QuestionResponseDTO> myQuestions = questionService.getMyQuestions(username);
-            
+
             // Đẩy dữ liệu sang View
             model.addAttribute("questions", myQuestions);
-            
+
             // Trả về file HTML: src/main/resources/templates/student/dashboard.html
             // LƯU Ý: Thư mục phải là 'student' (không có s)
-            return "student/dashboard"; 
+            return "student/dashboard";
         } catch (RuntimeException e) {
             // Xử lý lỗi nếu user không tồn tại hoặc có lỗi khác
             e.printStackTrace();
@@ -75,16 +75,18 @@ public class StudentController {
         model.addAttribute("questionDTO", new QuestionCreateDTO());
         // Lấy danh sách phòng ban để hiển thị trong <select>
         model.addAttribute("departments", departmentService.getAllDepartments());
-        
+
         return "student/create_question"; // Cần tạo file này
     }
 
     @PostMapping("/create-question")
     public String saveQuestion(@Valid @ModelAttribute("questionDTO") QuestionCreateDTO dto,
-                               BindingResult result,
-                               Authentication authentication,
-                               Model model,
-                               RedirectAttributes redirectAttributes) {
+            BindingResult result,
+            @RequestParam(value = "tagInput", required = false) String tagInput,
+            @RequestParam(value = "files", required = false) org.springframework.web.multipart.MultipartFile[] files,
+            Authentication authentication,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         // 1. Nếu form nhập sai (bỏ trống...)
         if (result.hasErrors()) {
             model.addAttribute("departments", departmentService.getAllDepartments());
@@ -92,13 +94,13 @@ public class StudentController {
         }
 
         try {
-            // 2. Gọi Service lưu vào DB
-            questionService.createQuestion(dto, authentication.getName());
-            
+            // 2. Gọi Service lưu vào DB (Đã cập nhật hàm này logic Tags & Files)
+            questionService.createQuestion(dto, authentication.getName(), tagInput, files);
+
             // 3. Thông báo thành công và quay về Dashboard
             redirectAttributes.addFlashAttribute("successMessage", "Gửi câu hỏi thành công! Vui lòng chờ phản hồi.");
             return "redirect:/student/dashboard";
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("errorMessage", "Lỗi hệ thống: " + e.getMessage());
@@ -111,9 +113,9 @@ public class StudentController {
     // 3. XEM CHI TIẾT & PHẢN HỒI
     // ======================================================
     @GetMapping("/question/{id}")
-    public String viewQuestionDetail(@PathVariable Long id, 
-                                     Model model,
-                                     RedirectAttributes redirectAttributes) {
+    public String viewQuestionDetail(@PathVariable Long id,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         try {
             // Lấy thông tin câu hỏi
             QuestionResponseDTO question = questionService.getQuestionDetail(id);
@@ -122,21 +124,21 @@ public class StudentController {
 
             model.addAttribute("question", question);
             model.addAttribute("answers", answers);
-            
+
             return "student/question_detail"; // Cần tạo file này
-            
+
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy câu hỏi!");
             return "redirect:/student/dashboard";
         }
     }
-    
+
     @PostMapping("/question/{id}/reply")
-    public String studentReply(@PathVariable Long id, 
-                               @RequestParam("content") String content,
-                               Authentication authentication,
-                               RedirectAttributes redirectAttributes) {
-        
+    public String studentReply(@PathVariable Long id,
+            @RequestParam("content") String content,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
         if (content == null || content.trim().isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Nội dung không được để trống");
             return "redirect:/student/question/" + id;

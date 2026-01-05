@@ -36,5 +36,6 @@ public class QuestionResponseDTO {
 
     private Integer viewCount; // Thêm trường này
 
-    private List<String> tagNames;
+    private String tagsCached; // Chuỗi tags phân tách bởi dấu phẩy
+    private List<com.hcmute.qaute.entity.Attachment> attachments; // List file đính kèm
 }

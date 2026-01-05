@@ -40,6 +40,13 @@ public class Question {
     @Column(name = "tags_cached")
     private String tagsCached; // Lưu dạng chuỗi ví dụ: "hoc-phi, tot-nghiep" để search nhanh
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "question_tags", joinColumns = @JoinColumn(name = "question_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private java.util.Set<Tag> tags = new java.util.HashSet<>();
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Attachment> attachments = new java.util.ArrayList<>();
+
     @Column(name = "view_count")
     private Integer viewCount = 0;
 
