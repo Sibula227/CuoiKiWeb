@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>404 - Không tìm thấy trang | Cổng Tư vấn Sinh viên QAUTE</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#10B981", // Emerald 500 matching the screenshot buttons
+                        "primary-dark": "#059669",
+                        "background-light": "#ECFDF5", // Light mint green background
+                        "background-dark": "#064E3B", // Dark green/slate for dark mode
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#1F2937",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        'xl': '1rem',
+                        '2xl': '1.5rem',
+                        'pill': '9999px',
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .search-shadow {
+            box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.15);
+        }
+
+        @keyframes blob {
+            0% {
+                transform: translate(0px, 0px) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+
+            100% {
+                transform: translate(0px, 0px) scale(1);
+            }
+        }
+
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col font-body transition-colors duration-200">
+    <header class="bg-surface-light dark:bg-gray-800 shadow-sm sticky top-0 z-50 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a th:href="@{/}" class="flex items-center gap-2 cursor-pointer text-decoration-none">
+                <span class="material-icons-round text-primary text-3xl">eco</span>
+                <span class="text-2xl font-bold text-primary tracking-tight">QAUTE</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a th:href="@{/student/create-question}"
+                    class="hidden sm:flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-lg font-medium transition-colors shadow-sm text-decoration-none">
+                    <span class="material-icons-round text-sm">add</span>
+                    Đặt câu hỏi
+                </a>
+                <div class="flex items-center gap-3 border-l border-gray-200 dark:border-gray-700 pl-4 ml-2">
+                    <div
+                        class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-inner">
+                        ST
+                    </div>
+                    <div class="hidden md:block">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white leading-tight">User</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Guest</p>
+                    </div>
+                    <span
+                        class="material-icons-round text-gray-400 dark:text-gray-500 cursor-pointer">arrow_drop_down</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main
+        class="flex-grow flex flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none opacity-40">
+            <div
+                class="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+            </div>
+            <div
+                class="absolute top-10 right-10 w-64 h-64 bg-green-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+            </div>
+            <div
+                class="absolute -bottom-8 left-20 w-64 h-64 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000">
+            </div>
+        </div>
+        <div class="w-full max-w-4xl mx-auto text-center space-y-8 z-10">
+            <div class="space-y-2">
+                <h1
+                    class="text-9xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-600 tracking-tighter">
+                    404
+                </h1>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
+                    Oops! Không tìm thấy trang
+                </h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    Có vẻ như trang bạn đang tìm kiếm không tồn tại, đã bị xóa hoặc đường dẫn bị hỏng. Hãy thử tìm kiếm
+                    thông tin bên dưới.
+                </p>
+            </div>
+            <div class="max-w-3xl mx-auto w-full relative group">
+                <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                    <span
+                        class="material-icons-round text-gray-400 text-2xl group-focus-within:text-primary transition-colors">search</span>
+                </div>
+                <input
+                    class="block w-full pl-14 pr-36 py-5 rounded-full border-0 shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:shadow-xl transition-all duration-300 text-lg"
+                    placeholder="Bạn đang tìm kiếm thông tin gì?" type="text" />
+                <div class="absolute inset-y-2 right-2">
+                    <button
+                        class="h-full px-8 rounded-full bg-primary hover:bg-emerald-600 text-white font-semibold shadow-md transition-all duration-200 flex items-center gap-2">
+                        Tìm kiếm
+                    </button>
+                </div>
+            </div>
+            <div class="mt-12">
+                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-6">Hoặc
+                    truy cập nhanh các chuyên mục</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <a class="group bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-lg ring-1 ring-gray-100 dark:ring-gray-700 hover:ring-primary/50 dark:hover:ring-primary/50 transition-all duration-300 flex flex-col items-center gap-3 text-center text-decoration-none"
+                        th:href="@{/}">
+                        <div
+                            class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <span class="material-icons-round">layers</span>
+                        </div>
+                        <span
+                            class="font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">Tất
+                            cả câu hỏi</span>
+                    </a>
+                    <a class="group bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-lg ring-1 ring-gray-100 dark:ring-gray-700 hover:ring-primary/50 dark:hover:ring-primary/50 transition-all duration-300 flex flex-col items-center gap-3 text-center text-decoration-none"
+                        href="#">
+                        <div
+                            class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <span class="material-icons-round">school</span>
+                        </div>
+                        <span
+                            class="font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">Phòng
+                            Đào tạo</span>
+                    </a>
+                    <a class="group bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-lg ring-1 ring-gray-100 dark:ring-gray-700 hover:ring-primary/50 dark:hover:ring-primary/50 transition-all duration-300 flex flex-col items-center gap-3 text-center text-decoration-none"
+                        href="#">
+                        <div
+                            class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <span class="material-icons-round">payments</span>
+                        </div>
+                        <span
+                            class="font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">Phòng
+                            Tài chính</span>
+                    </a>
+                    <a class="group bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-lg ring-1 ring-gray-100 dark:ring-gray-700 hover:ring-primary/50 dark:hover:ring-primary/50 transition-all duration-300 flex flex-col items-center gap-3 text-center text-decoration-none"
+                        href="#">
+                        <div
+                            class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <span class="material-icons-round">favorite</span>
+                        </div>
+                        <span
+                            class="font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">Công
+                            tác sinh viên</span>
+                    </a>
+                </div>
+            </div>
+            <div class="pt-8">
+                <a class="inline-flex items-center gap-2 text-primary hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-semibold transition-colors text-decoration-none"
+                    th:href="@{/}">
+                    <span class="material-icons-round text-sm">arrow_back</span>
+                    Quay lại trang chủ
+                </a>
+            </div>
+        </div>
+    </main>
+    <button
+        class="fixed bottom-6 right-6 w-14 h-14 bg-primary hover:bg-primary-dark text-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-50">
+        <span class="material-icons-round text-2xl">chat_bubble_outline</span>
+    </button>
+    <footer class="bg-surface-light dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
+            © 2023 Cổng Tư vấn Sinh viên QAUTE. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+
+</html>
