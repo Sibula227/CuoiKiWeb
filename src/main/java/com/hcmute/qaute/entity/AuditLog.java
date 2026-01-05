@@ -27,8 +27,8 @@ public class AuditLog {
     @Column(name = "object_id", length = 100)
     private String objectId;
 
-    @Column(columnDefinition = "JSON")
-    private String details; // Lưu chi tiết thay đổi (nếu dùng MySQL 5.7+ có hỗ trợ JSON)
+    @Column(columnDefinition = "TEXT")
+    private String details; // Lưu chi tiết thay đổi
 
     @Column(name = "ip_address", length = 100)
     private String ipAddress;

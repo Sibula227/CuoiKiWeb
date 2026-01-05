@@ -39,4 +39,10 @@ public class ChatController {
         result.put("message", "New session created");
         return result;
     }
+
+    @GetMapping("/history")
+    public java.util.List<Map<String, String>> getHistory(java.security.Principal principal) {
+        String username = (principal != null) ? principal.getName() : "anonymous";
+        return geminiService.getChatHistory(username);
+    }
 }

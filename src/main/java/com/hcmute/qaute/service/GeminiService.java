@@ -49,17 +49,20 @@ public class GeminiService {
     private final ChatSessionRepository chatSessionRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final AuditLogService auditLogService;
 
     private Client client;
 
     public GeminiService(KnowledgeService knowledgeService,
             ChatSessionRepository chatSessionRepository,
             ChatMessageRepository chatMessageRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            AuditLogService auditLogService) {
         this.knowledgeService = knowledgeService;
         this.chatSessionRepository = chatSessionRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.userRepository = userRepository;
+        this.auditLogService = auditLogService;
     }
 
     @PostConstruct
@@ -191,11 +194,15 @@ public class GeminiService {
             }
             chatSessionRepository.save(session);
 
+            // Log Action
+            auditLogService.log(username, "CHAT", "ChatSession", String.valueOf(session.getId()),
+                    "User asked: " + (userMessage.length() > 50 ? userMessage.substring(0, 50) + "..." : userMessage));
+
             return aiResponseText;
 
         } catch (Exception e) {
             log.error("Gemini Service Error: ", e);
-            return "Xin lỗi, hệ thống AI đang gặp lỗi. (" + e.getMessage() + ")";
+            return "Xin lỗi, hệ thống AI đang gặp lỗi 1 chút, vui lòng thử lại sau";
         }
     }
 
@@ -207,5 +214,35 @@ public class GeminiService {
         newSession.setUser(user);
         newSession.setTitle("New Chat");
         chatSessionRepository.save(newSession);
+
+        auditLogService.log(username, "CREATE_SESSION", "ChatSession", String.valueOf(newSession.getId()),
+                "Started a new chat session");
+    }
+
+    public List<java.util.Map<String, String>> getChatHistory(String username) {
+        com.hcmute.qaute.entity.User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+        Optional<ChatSession> sessionOpt = chatSessionRepository.findTopByUserOrderByUpdatedAtDesc(user);
+
+        if (sessionOpt.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ChatSession session = sessionOpt.get();
+        List<ChatMessage> messages = chatMessageRepository.findBySessionOrderByCreatedAtDesc(
+                session,
+                org.springframework.data.domain.PageRequest.of(0, 50)).stream()
+                .sorted((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()))
+                .collect(java.util.stream.Collectors.toList());
+
+        List<java.util.Map<String, String>> history = new ArrayList<>();
+        for (ChatMessage msg : messages) {
+            java.util.Map<String, String> map = new java.util.HashMap<>();
+            map.put("role", msg.getRole());
+            map.put("content", msg.getContent());
+            history.add(map);
+        }
+        return history;
     }
 }

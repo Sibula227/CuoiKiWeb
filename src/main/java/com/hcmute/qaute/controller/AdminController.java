@@ -23,27 +23,36 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
-@PreAuthorize("hasAnyAuthority('ADMIN', 'ADVISOR')") 
+@PreAuthorize("hasAnyAuthority('ADMIN', 'ADVISOR')")
 public class AdminController {
 
-    @Autowired private QuestionService questionService;
-    @Autowired private AnswerService answerService;
-    @Autowired private UserRepository userRepository;
+    @Autowired
+    private QuestionService questionService;
+    @Autowired
+    private AnswerService answerService;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Autowired private RoleRepository roleRepository;
-    @Autowired private DepartmentRepository departmentRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private DepartmentRepository departmentRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private com.hcmute.qaute.service.AuditLogService auditLogService;
 
     // 1. DASHBOARD
     @GetMapping("/dashboard")
-    public String dashboard(Model model, Authentication authentication) { 
+    public String dashboard(Model model, Authentication authentication) {
         List<QuestionResponseDTO> allQuestions = questionService.getQuestionsForDashboard(authentication.getName());
-        long pendingCount = allQuestions.stream().filter(q -> q.getStatus() != null && q.getStatus() != QuestionStatus.ANSWERED).count();
+        long pendingCount = allQuestions.stream()
+                .filter(q -> q.getStatus() != null && q.getStatus() != QuestionStatus.ANSWERED).count();
         long answeredCount = allQuestions.size() - pendingCount;
         model.addAttribute("questions", allQuestions);
         model.addAttribute("pendingCount", pendingCount);
         model.addAttribute("answeredCount", answeredCount);
-        return "admin/dashboard"; 
+        return "admin/dashboard";
     }
 
     // 2. LIST USERS
@@ -52,7 +61,7 @@ public class AdminController {
     public String manageUsers(Model model) {
         List<User> users = userRepository.findAll();
         model.addAttribute("users", users);
-        return "admin/users"; 
+        return "admin/users";
     }
 
     // --- 3. CÁC HÀM CRUD USER ---
@@ -97,7 +106,7 @@ public class AdminController {
                 } else {
                     user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
                 }
-                user.setIsActive(existingUser.getIsActive()); 
+                user.setIsActive(existingUser.getIsActive());
                 user.setCreatedAt(existingUser.getCreatedAt());
             }
         }
@@ -115,14 +124,14 @@ public class AdminController {
         List<AnswerDTO> answers = answerService.getAnswersByQuestionId(id);
         model.addAttribute("question", question);
         model.addAttribute("answers", answers);
-        return "admin/question_detail"; 
+        return "admin/question_detail";
     }
 
     @PostMapping("/question/{id}/answer")
     public String submitAnswer(@PathVariable Long id,
-                               @RequestParam("content") String content,
-                               Authentication authentication,
-                               RedirectAttributes redirectAttributes) {
+            @RequestParam("content") String content,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
         if (content == null || content.trim().isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Nội dung trả lời không được để trống!");
             return "redirect:/admin/question/" + id;
@@ -130,7 +139,7 @@ public class AdminController {
         try {
             answerService.addAnswer(id, content, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Đã gửi câu trả lời thành công!");
-            return "redirect:/admin/question/" + id; 
+            return "redirect:/admin/question/" + id;
         } catch (Exception e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
@@ -199,12 +208,12 @@ public class AdminController {
     // Đây là hàm duy nhất xử lý xóa user
     @GetMapping("/users/delete/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public String deleteUser(@PathVariable Long id, 
-                             RedirectAttributes ra, 
-                             Authentication authentication) {
-        
+    public String deleteUser(@PathVariable Long id,
+            RedirectAttributes ra,
+            Authentication authentication) {
+
         User userToDelete = userRepository.findById(id).orElse(null);
-        
+
         if (userToDelete == null) {
             ra.addFlashAttribute("errorMessage", "Người dùng không tồn tại!");
             return "redirect:/admin/users";
@@ -232,7 +241,15 @@ public class AdminController {
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "Lỗi hệ thống: Không thể xóa user này.");
         }
-        
+
         return "redirect:/admin/users";
+    }
+
+    // 7. SYSTEM LOGS
+    @GetMapping("/logs")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public String viewLogs(Model model) {
+        model.addAttribute("logs", auditLogService.getRecentLogs());
+        return "admin/logs";
     }
 }

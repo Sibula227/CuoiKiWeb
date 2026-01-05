@@ -28,6 +28,21 @@ class ChatBotService {
             throw error;
         }
     }
+
+    async getHistory() {
+        try {
+            const response = await fetch(this.API_URL + "/history");
+            if (!response.ok) {
+                // If 401/403 (anonymous), just return empty
+                if (response.status === 401 || response.status === 403) return [];
+                throw new Error("HTTP " + response.status);
+            }
+            return await response.json();
+        } catch (error) {
+            console.warn("Failed to load history:", error);
+            return [];
+        }
+    }
 }
 
 class ChatBotUI {
@@ -45,6 +60,29 @@ class ChatBotUI {
 
         this.inputInitHeight = 24;
         this.initEventListeners();
+        this.loadHistory();
+    }
+
+    async loadHistory() {
+        const history = await this.service.getHistory();
+        if (history && history.length > 0) {
+            this.elements.chatbox.innerHTML = ''; // Clear default welcome message
+
+            history.forEach(msg => {
+                const type = msg.role === 'user' ? 'outgoing' : 'incoming';
+                const isModel = msg.role === 'model';
+
+                // For model messages, we might want to render markdown, so pass it raw first
+                const bubble = this.createChatBubble(msg.content, type);
+                this.elements.chatbox.appendChild(bubble);
+
+                if (isModel) {
+                    const messageP = bubble.querySelector(".message-content");
+                    this.renderResponse(messageP, msg.content);
+                }
+            });
+            this.scrollToBottom();
+        }
     }
 
     initEventListeners() {
