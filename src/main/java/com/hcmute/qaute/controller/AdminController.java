@@ -42,6 +42,9 @@ public class AdminController {
     @Autowired
     private com.hcmute.qaute.service.AuditLogService auditLogService;
 
+    @Autowired
+    private com.hcmute.qaute.service.ReportService reportService;
+
     // 1. DASHBOARD
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
@@ -53,6 +56,18 @@ public class AdminController {
         model.addAttribute("pendingCount", pendingCount);
         model.addAttribute("answeredCount", answeredCount);
         return "admin/dashboard";
+    }
+
+    @GetMapping("/dashboard/export")
+    public void exportToPDF(jakarta.servlet.http.HttpServletResponse response, Authentication authentication)
+            throws java.io.IOException {
+        response.setContentType("application/pdf");
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=qaute_report_" + java.time.LocalDate.now() + ".pdf";
+        response.setHeader(headerKey, headerValue);
+
+        List<QuestionResponseDTO> allQuestions = questionService.getQuestionsForDashboard(authentication.getName());
+        reportService.exportDashboardPdf(allQuestions, response);
     }
 
     // 2. LIST USERS
