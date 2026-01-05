@@ -27,10 +27,16 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     // Dùng Pageable để hỗ trợ phân trang luôn (cho xịn)
     @Query("SELECT q FROM Question q WHERE q.title LIKE %:keyword% OR q.content LIKE %:keyword%")
     Page<Question> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
-    
+
     // 5. Thống kê: Đếm số lượng câu hỏi theo trạng thái (Dùng vẽ biểu đồ Dashboard)
     long countByStatus(QuestionStatus status);
-    
-    List<Question> findByDepartmentId(Long departmentId);
-    
+
+    // 6. Lọc theo Department và phân trang/sort
+    Page<Question> findByDepartmentId(Integer departmentId, Pageable pageable);
+
+    // 7. Lấy tất cả có phân trang/sort (khi không chọn department)
+    Page<Question> findAll(Pageable pageable);
+
+    // Xóa cái cũ bị dư
+    // List<Question> findByDepartmentId(Long departmentId);
 }

@@ -11,9 +11,9 @@ public class QuestionResponseDTO {
     private Long id;
     private String title;
     private String content;
-    
+
     // Thông tin người hỏi
-    private Long studentId;      // ID trong database (dùng để link)
+    private Long studentId; // ID trong database (dùng để link)
     private String studentName;
     private String studentAvatar;
 
@@ -22,7 +22,7 @@ public class QuestionResponseDTO {
     // --------------------------------
 
     private String studentFaculty; // Khoa
-    private String studentCohort;  // Khóa
+    private String studentCohort; // Khóa
 
     // Thông tin phòng ban
     private Integer departmentId;
@@ -30,9 +30,11 @@ public class QuestionResponseDTO {
 
     private QuestionPriority priority;
     private QuestionStatus status;
-    
+
     private LocalDateTime createdAt;
     private String timeAgo;
-    
+
+    private Integer viewCount; // Thêm trường này
+
     private List<String> tagNames;
 }

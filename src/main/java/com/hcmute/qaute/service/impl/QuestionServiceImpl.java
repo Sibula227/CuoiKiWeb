@@ -78,8 +78,11 @@ public class QuestionServiceImpl implements QuestionService {
             list = questionRepository.findAll();
         } else if ("ADVISOR".equals(roleCode)) {
             if (currentUser.getDepartment() != null) {
-                Long deptId = Long.valueOf(currentUser.getDepartment().getId());
-                list = questionRepository.findByDepartmentId(deptId);
+                Integer deptId = currentUser.getDepartment().getId();
+                // Use default sort for dashboard
+                org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0,
+                        100, org.springframework.data.domain.Sort.by("createdAt").descending());
+                list = questionRepository.findByDepartmentId(deptId, pageable).getContent();
             } else {
                 list = new ArrayList<>();
             }
@@ -124,6 +127,55 @@ public class QuestionServiceImpl implements QuestionService {
         return list.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public List<QuestionResponseDTO> getFilterQuestions(Integer departmentId, String sort) {
+        org.springframework.data.domain.Pageable pageable;
+
+        // 1. Xác định Sort
+        if ("popular".equalsIgnoreCase(sort)) {
+            pageable = org.springframework.data.domain.PageRequest.of(0, 50,
+                    org.springframework.data.domain.Sort.by("viewCount").descending());
+        } else if ("unanswered".equalsIgnoreCase(sort)) {
+            // Với "unanswered", ta có thể sort theo cũ nhất hoặc lọc theo status.
+            // Ở đây ưu tiên sort cũ nhất để advisors thấy việc cần làm
+            pageable = org.springframework.data.domain.PageRequest.of(0, 50,
+                    org.springframework.data.domain.Sort.by("createdAt").ascending());
+        } else {
+            // Mặc định: Mới nhất
+            pageable = org.springframework.data.domain.PageRequest.of(0, 50,
+                    org.springframework.data.domain.Sort.by("createdAt").descending());
+        }
+
+        org.springframework.data.domain.Page<Question> pageResult;
+
+        // 2. Query
+        if (departmentId != null) {
+            pageResult = questionRepository.findByDepartmentId(departmentId, pageable);
+        } else {
+            // NẾU là "unanswered", ta có thể filter thêm status PENDING
+            if ("unanswered".equalsIgnoreCase(sort)) {
+                // Để đơn giản, ta tìm tất cả rồi filter bằng stream hoặc custom query.
+                // Nhưng tốt nhất làm query riêng. Tạm thời dùng findByStatus ở Repos nếu cần
+                // chính xác.
+                // Ở đây ta chấp nhận sort theo cũ nhất như logic trên.
+                pageResult = questionRepository.findAll(pageable);
+            } else {
+                pageResult = questionRepository.findAll(pageable);
+            }
+        }
+
+        // 3. Filter thêm nếu cần (VD: status)
+        List<Question> list = pageResult.getContent();
+
+        if ("unanswered".equalsIgnoreCase(sort)) {
+            list = list.stream()
+                    .filter(q -> q.getStatus() == QuestionStatus.PENDING)
+                    .collect(Collectors.toList());
+        }
+
+        return list.stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
     // --- HÀM CHUYỂN ĐỔI ENTITY -> DTO (QUAN TRỌNG) ---
     private QuestionResponseDTO mapToDTO(Question q) {
         QuestionResponseDTO dto = new QuestionResponseDTO();
@@ -134,6 +186,7 @@ public class QuestionServiceImpl implements QuestionService {
         dto.setStatus(q.getStatus());
         dto.setCreatedAt(q.getCreatedAt());
         dto.setTimeAgo(calculateTimeAgo(q.getCreatedAt()));
+        dto.setViewCount(q.getViewCount() == null ? 0 : q.getViewCount()); // Map viewCount
 
         dto.setStudentFaculty(q.getStudentFaculty());
         dto.setStudentCohort(q.getStudentCohort());

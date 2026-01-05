@@ -16,13 +16,28 @@ public class HomeController {
     @Autowired
     private QuestionService questionService;
 
+    @Autowired
+    private com.hcmute.qaute.service.DepartmentService departmentService; // Inject DepartmentService
+
     // Trang chủ công khai (Forum)
     @GetMapping("/")
-    public String homePage(Model model) {
-        // Lấy tất cả câu hỏi (hoặc chỉ lấy câu đã trả lời tùy bạn)
-        List<QuestionResponseDTO> questions = questionService.getAllQuestions();
+    public String homePage(
+            @org.springframework.web.bind.annotation.RequestParam(name = "dept", required = false) Integer deptId,
+            @org.springframework.web.bind.annotation.RequestParam(name = "sort", required = false) String sort,
+            Model model) {
+
+        // 1. Lấy danh sách câu hỏi đã filter
+        List<QuestionResponseDTO> questions = questionService.getFilterQuestions(deptId, sort);
         model.addAttribute("questions", questions);
-        return "home"; // Trả về file templates/home.html
+
+        // 2. Lấy danh sách Department cho Sidebar
+        model.addAttribute("departments", departmentService.getAllDepartments());
+
+        // 3. Truyền lại params để UI highlight
+        model.addAttribute("currentDeptId", deptId);
+        model.addAttribute("currentSort", sort);
+
+        return "home";
     }
 
     // Xem chi tiết (Ai cũng xem được, nhưng nút Reply sẽ bắt login)

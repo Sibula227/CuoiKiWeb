@@ -21,4 +21,6 @@ public interface QuestionService {
 
     // Tìm kiếm câu hỏi
     List<QuestionResponseDTO> searchQuestions(String keyword);
+
+    List<QuestionResponseDTO> getFilterQuestions(Integer departmentId, String sort);
 }

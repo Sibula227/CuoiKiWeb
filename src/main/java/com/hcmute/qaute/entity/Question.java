@@ -40,13 +40,16 @@ public class Question {
     @Column(name = "tags_cached")
     private String tagsCached; // Lưu dạng chuỗi ví dụ: "hoc-phi, tot-nghiep" để search nhanh
 
+    @Column(name = "view_count")
+    private Integer viewCount = 0;
+
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
     // ------------------------------------
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-    
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -55,14 +58,15 @@ public class Question {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
     @Column(name = "student_faculty")
     private String studentFaculty; // Ví dụ: "Công nghệ thông tin"
 
     @Column(name = "student_cohort")
-    private String studentCohort;  // Ví dụ: "K2021"
+    private String studentCohort; // Ví dụ: "K2021"
 }

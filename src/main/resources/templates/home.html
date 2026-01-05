@@ -87,18 +87,15 @@
                 <div class="sticky-top" style="top: 100px;">
                     <h6 class="fw-bold text-uppercase text-muted ls-1 mb-3">Chuyên mục</h6>
                     <div class="list-group glass-card border-0 mb-4">
-                        <a href="#"
-                            class="list-group-item list-group-item-action border-0 active bg-success bg-opacity-10 text-success fw-bold">
+                        <a th:href="@{/(sort=${currentSort})}"
+                            class="list-group-item list-group-item-action border-0 fw-bold"
+                            th:classappend="${currentDeptId == null} ? 'active bg-success bg-opacity-10 text-success' : 'bg-transparent'">
                             <i class="fa-solid fa-layer-group me-2"></i> Tất cả câu hỏi
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 bg-transparent">
-                            <i class="fa-solid fa-graduation-cap me-2"></i> Phòng Đào tạo
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 bg-transparent">
-                            <i class="fa-solid fa-money-bill-wave me-2"></i> Phòng Tài chính
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 bg-transparent">
-                            <i class="fa-solid fa-heart me-2"></i> Công tác sinh viên
+                        <a th:each="dept : ${departments}" th:href="@{/(dept=${dept.id}, sort=${currentSort})}"
+                            class="list-group-item list-group-item-action border-0"
+                            th:classappend="${currentDeptId == dept.id} ? 'active bg-success bg-opacity-10 text-success fw-bold' : 'bg-transparent'">
+                            <i class="fa-solid fa-building-columns me-2"></i> <span th:text="${dept.name}">Khoa</span>
                         </a>
                     </div>
                 </div>
@@ -107,10 +104,13 @@
             <div class="col-lg-9">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="fw-bold"><i class="fa-regular fa-comments me-2 text-success"></i>Thảo luận mới nhất</h4>
-                    <select class="form-select w-auto border-0 shadow-sm glass-card">
-                        <option>Mới nhất</option>
-                        <option>Phổ biến nhất</option>
-                        <option>Chưa trả lời</option>
+                    <select class="form-select w-auto border-0 shadow-sm glass-card" onchange="location = this.value;">
+                        <option th:value="@{/(dept=${currentDeptId}, sort='newest')}"
+                            th:selected="${currentSort == 'newest' || currentSort == null}">Mới nhất</option>
+                        <option th:value="@{/(dept=${currentDeptId}, sort='popular')}"
+                            th:selected="${currentSort == 'popular'}">Phổ biến nhất</option>
+                        <option th:value="@{/(dept=${currentDeptId}, sort='unanswered')}"
+                            th:selected="${currentSort == 'unanswered'}">Chưa trả lời</option>
                     </select>
                 </div>
 
@@ -139,6 +139,9 @@
                                     class="text-decoration-none text-dark hover-success">
                                     <span th:text="${q.title}">Tiêu đề câu hỏi...</span>
                                 </a>
+                                <small class="text-muted ms-2" th:if="${q.viewCount > 0}">
+                                    <i class="fa-regular fa-eye me-1"></i><span th:text="${q.viewCount}">10</span>
+                                </small>
                             </h5>
 
                             <p class="text-muted text-truncate mb-3" style="max-width: 700px;" th:text="${q.content}">
