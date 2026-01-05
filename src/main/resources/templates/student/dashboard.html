@@ -1,21 +1,38 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head th:replace="~{fragments/layout :: head_fragment}"></head>
 
 <body>
 
     <div th:replace="~{fragments/layout :: main_content(content=~{:: .my-dashboard})}">
-        
+
         <div class="my-dashboard container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-5">
                 <div>
-                    <h2 class="fw-bold mb-0">Xin chào, <span sec:authentication="name" class="text-success">Bạn</span>! 👋</h2>
+                    <h2 class="fw-bold mb-0">Xin chào, <span sec:authentication="name" class="text-success">Bạn</span>!
+                        👋</h2>
                     <p class="text-muted">Bạn có thắc mắc gì hôm nay không?</p>
                 </div>
                 <a th:href="@{/student/create-question}" class="btn btn-primary btn-lg shadow-lg">
                     <i class="fa-solid fa-plus me-2"></i> Tạo câu hỏi mới
                 </a>
+            </div>
+
+            <!-- ALERT: Unread Notifications -->
+            <div class="alert alert-primary border-primary border-opacity-25 bg-primary bg-opacity-10 d-flex align-items-center mb-5 shadow-sm"
+                th:if="${unreadNotificationCount > 0}">
+                <i class="fa-solid fa-bell fa-lg me-3 text-primary notification-badge-pulse"></i>
+                <div class="flex-grow-1">
+                    <span class="fw-bold">Thông báo mới!</span> Bạn có <strong class="text-danger"
+                        th:text="${unreadNotificationCount}">3</strong> thông báo chưa đọc.
+                    <button class="btn btn-sm btn-link text-decoration-none fw-bold ms-1" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false"
+                        onclick="document.querySelector('.sidebar .dropdown button').click();">
+                        Xem ngay
+                    </button>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
             <div class="row g-4 mb-5">
@@ -37,7 +54,8 @@
             <div class="row">
                 <div class="col-12" th:if="${questions == null || questions.isEmpty()}">
                     <div class="text-center py-5 text-muted">
-                        <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="100" class="mb-3 opacity-50">
+                        <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="100"
+                            class="mb-3 opacity-50">
                         <p>Bạn chưa đặt câu hỏi nào cả.</p>
                     </div>
                 </div>
@@ -46,34 +64,38 @@
                     <div class="glass-card p-4">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <span class="badge mb-2 bg-success bg-opacity-10 text-success" 
-                                      th:if="${q.status != null && q.status.name() == 'ANSWERED'}">
+                                <span class="badge mb-2 bg-success bg-opacity-10 text-success"
+                                    th:if="${q.status != null && q.status.name() == 'ANSWERED'}">
                                     Đã trả lời
                                 </span>
-                                <span class="badge mb-2 bg-warning bg-opacity-10 text-warning text-dark" 
-                                      th:if="${q.status != null && q.status.name() != 'ANSWERED'}">
+                                <span class="badge mb-2 bg-warning bg-opacity-10 text-warning text-dark"
+                                    th:if="${q.status != null && q.status.name() != 'ANSWERED'}">
                                     Đang xử lý
                                 </span>
                                 <span class="badge mb-2 bg-secondary" th:if="${q.status == null}">Chưa rõ</span>
 
                                 <h5 class="fw-bold">
-                                    <a th:href="@{/student/question/{id}(id=${q.id})}" class="text-decoration-none text-dark stretched-link">
+                                    <a th:href="@{/student/question/{id}(id=${q.id})}"
+                                        class="text-decoration-none text-dark stretched-link">
                                         <span th:text="${q.title}">Tiêu đề câu hỏi</span>
                                     </a>
                                 </h5>
-                                <p class="text-muted mb-2 text-truncate" style="max-width: 600px;" th:text="${q.content}">
+                                <p class="text-muted mb-2 text-truncate" style="max-width: 600px;"
+                                    th:text="${q.content}">
                                     Nội dung tóm tắt...
                                 </p>
-                                
+
                                 <div class="d-flex align-items-center mt-3 text-muted small">
-                                    <span class="me-3"><i class="fa-regular fa-calendar me-1"></i> <span th:text="${q.timeAgo}">Vừa xong</span></span>
-                                    
+                                    <span class="me-3"><i class="fa-regular fa-calendar me-1"></i> <span
+                                            th:text="${q.timeAgo}">Vừa xong</span></span>
+
                                     <span class="me-3" th:if="${q.departmentName != null}">
-                                        <i class="fa-solid fa-building me-1"></i> <span th:text="${q.departmentName}">Phòng Đào tạo</span>
+                                        <i class="fa-solid fa-building me-1"></i> <span
+                                            th:text="${q.departmentName}">Phòng Đào tạo</span>
                                     </span>
                                 </div>
                             </div>
-                            
+
                             <div class="text-success fs-4">
                                 <i class="fa-solid fa-chevron-right"></i>
                             </div>
@@ -83,7 +105,8 @@
             </div>
         </div>
     </div>
-    
+
     <div th:replace="~{fragments/layout :: script_fragment}"></div>
 </body>
+
 </html>
