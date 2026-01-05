@@ -107,8 +107,9 @@
                     </div>
 
                     <!-- AUTHENTICATED -->
+                    <!-- AUTHENTICATED -->
                     <div sec:authorize="isAuthenticated()"
-                        class="flex items-center gap-3 relative group cursor-pointer">
+                        class="flex items-center gap-3 relative group cursor-pointer h-full">
                         <div
                             class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-inner overflow-hidden">
                             <img th:src="'https://ui-avatars.com/api/?name=' + ${#authentication.name} + '&background=10b981&color=fff'"
@@ -118,25 +119,30 @@
                             <p class="text-sm font-semibold text-gray-900 dark:text-white leading-tight"
                                 sec:authentication="name">User</p>
                             <p class="text-xs text-gray-500 dark:text-gray-400"
-                                th:text="${#authentication.getAuthorities()[0].authority}">Role</p>
+                                th:text="${#authentication.getAuthorities()[0].authority == 'STUDENT' ? 'Thành viên' : #authentication.getAuthorities()[0].authority}">
+                                Role</p>
                         </div>
                         <span class="material-icons-round text-gray-400 dark:text-gray-500">arrow_drop_down</span>
 
                         <!-- Dropdown Menu -->
-                        <div
-                            class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden hidden group-hover:block z-50">
-                            <form th:action="@{/logout}" method="post" class="block">
-                                <button type="submit"
-                                    class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center gap-2">
-                                    <span class="material-icons-round text-base">logout</span>
-                                    Đăng xuất
-                                </button>
-                            </form>
+                        <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                            <div
+                                class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                <form th:action="@{/logout}" method="post" class="block mb-0">
+                                    <button type="submit"
+                                        class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center gap-2">
+                                        <span class="material-icons-round text-base">logout</span>
+                                        Đăng xuất
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-
                 </div>
             </div>
+
+        </div>
+        </div>
         </div>
     </header>
     <main
