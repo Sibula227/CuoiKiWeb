@@ -89,7 +89,11 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         if (list != null && !list.isEmpty()) {
-            list.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
+            // Fix: Create a mutable list to avoid UnsupportedOperationException if list is
+            // immutable
+            List<Question> mutableList = new ArrayList<>(list);
+            mutableList.sort((q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
+            list = mutableList;
         }
 
         return list.stream()

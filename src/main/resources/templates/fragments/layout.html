@@ -49,9 +49,16 @@
                         </a>
                     </li>
 
+
                     <li class="nav-item" sec:authorize="hasAuthority('ADMIN')">
                         <a th:href="@{/admin/departments}" class="nav-link mb-2 text-dark">
                             <i class="fa-solid fa-sitemap me-2"></i> Quản lý Phòng ban
+                        </a>
+                    </li>
+
+                    <li class="nav-item" sec:authorize="hasAuthority('ADMIN')">
+                        <a th:href="@{/admin/logs}" class="nav-link mb-2 text-dark">
+                            <i class="fa-solid fa-clipboard-list me-2"></i> Nhật ký hệ thống
                         </a>
                     </li>
                 </div>
