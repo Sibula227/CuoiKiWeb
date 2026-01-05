@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <meta charset="utf-8" />
@@ -94,16 +94,47 @@
                     Đặt câu hỏi
                 </a>
                 <div class="flex items-center gap-3 border-l border-gray-200 dark:border-gray-700 pl-4 ml-2">
-                    <div
-                        class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-inner">
-                        ST
+
+                    <!-- NOT AUTHENTICATED -->
+                    <div sec:authorize="!isAuthenticated()" class="flex gap-2">
+                        <a th:href="@{/login}"
+                            class="text-sm font-semibold text-gray-700 hover:text-primary transition-colors text-decoration-none">Đăng
+                            nhập</a>
+                        <span class="text-gray-300">|</span>
+                        <a th:href="@{/register}"
+                            class="text-sm font-semibold text-gray-700 hover:text-primary transition-colors text-decoration-none">Đăng
+                            ký</a>
                     </div>
-                    <div class="hidden md:block">
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white leading-tight">User</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Guest</p>
+
+                    <!-- AUTHENTICATED -->
+                    <div sec:authorize="isAuthenticated()"
+                        class="flex items-center gap-3 relative group cursor-pointer">
+                        <div
+                            class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-inner overflow-hidden">
+                            <img th:src="'https://ui-avatars.com/api/?name=' + ${#authentication.name} + '&background=10b981&color=fff'"
+                                alt="Avatar" class="w-full h-full object-cover">
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white leading-tight"
+                                sec:authentication="name">User</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400"
+                                th:text="${#authentication.getAuthorities()[0].authority}">Role</p>
+                        </div>
+                        <span class="material-icons-round text-gray-400 dark:text-gray-500">arrow_drop_down</span>
+
+                        <!-- Dropdown Menu -->
+                        <div
+                            class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden hidden group-hover:block z-50">
+                            <form th:action="@{/logout}" method="post" class="block">
+                                <button type="submit"
+                                    class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center gap-2">
+                                    <span class="material-icons-round text-base">logout</span>
+                                    Đăng xuất
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    <span
-                        class="material-icons-round text-gray-400 dark:text-gray-500 cursor-pointer">arrow_drop_down</span>
+
                 </div>
             </div>
         </div>
@@ -205,10 +236,6 @@
             </div>
         </div>
     </main>
-    <button
-        class="fixed bottom-6 right-6 w-14 h-14 bg-primary hover:bg-primary-dark text-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-50">
-        <span class="material-icons-round text-2xl">chat_bubble_outline</span>
-    </button>
     <footer class="bg-surface-light dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 py-6 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
             © 2023 Cổng Tư vấn Sinh viên QAUTE. All rights reserved.
