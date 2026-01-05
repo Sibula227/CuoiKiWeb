@@ -35,7 +35,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((authorize) -> authorize
                         // 1. Cho phép truy cập tài nguyên tĩnh (CSS, JS, Ảnh)
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/svg/**", "/webjars/**").permitAll()
 
                         // 2. Cho phép các trang Public (Login, Register, Trang chủ)
                         .requestMatchers("/", "/login", "/register", "/error").permitAll()

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head_fragment}"></head>
+
+<body>
+    <div th:replace="~{fragments/layout :: main_content(content=~{:: .map-content})}">
+        <div class="map-content container-fluid p-4">
+            <h2 class="fw-bold text-success mb-4"><i class="fa-solid fa-map-location-dot me-2"></i>Bản đồ Trường Đại học
+                Sư phạm Kỹ thuật</h2>
+
+            <div class="glass-card p-3 position-relative" style="overflow: hidden; height: 80vh;">
+                <!-- Toolbar -->
+                <div class="position-absolute top-0 end-0 m-4 z-3 btn-group shadow">
+                    <button class="btn btn-light" onclick="zoomIn()"><i class="fa-solid fa-plus"></i></button>
+                    <button class="btn btn-light" onclick="resetZoom()"><i
+                            class="fa-solid fa-rotate-right"></i></button>
+                    <button class="btn btn-light" onclick="zoomOut()"><i class="fa-solid fa-minus"></i></button>
+                </div>
+
+                <!-- Map Container with Drag/Zoom -->
+                <div id="mapContainer" class="w-100 h-100 d-flex justify-content-center align-items-center"
+                    style="transition: transform 0.2s ease; cursor: grab;">
+                    <img th:src="@{/svg/SPKT.svg}" id="campusMap" class="img-fluid"
+                        style="max-height: 100%; pointer-events: none;">
+                </div>
+            </div>
+
+            <p class="text-muted mt-3 fst-italic text-center">
+                <i class="fa-solid fa-circle-info me-1"></i> Sử dụng các nút công cụ hoặc cuộn chuột để phóng to/thu
+                nhỏ. Kéo thả để di chuyển.
+            </p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: script_fragment}"></div>
+
+    <script>
+        let scale = 1;
+        let pannedX = 0;
+        let pannedY = 0;
+        const mapContainer = document.getElementById('mapContainer');
+        const mapWrapper = document.querySelector('.glass-card');
+        let isDragging = false;
+        let startX, startY;
+
+        function updateTransform() {
+            mapContainer.style.transform = `translate(${pannedX}px, ${pannedY}px) scale(${scale})`;
+        }
+
+        function zoomIn() {
+            scale *= 1.2;
+            updateTransform();
+        }
+
+        function zoomOut() {
+            scale /= 1.2;
+            if (scale < 0.5) scale = 0.5;
+            updateTransform();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            pannedX = 0;
+            pannedY = 0;
+            updateTransform();
+        }
+
+        // Mouse Wheel Zoom
+        mapWrapper.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                zoomIn();
+            } else {
+                zoomOut();
+            }
+        });
+
+        // Drag functionality
+        mapWrapper.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            mapContainer.style.cursor = 'grabbing';
+            startX = e.clientX - pannedX;
+            startY = e.clientY - pannedY;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            mapContainer.style.cursor = 'grab';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            pannedX = e.clientX - startX;
+            pannedY = e.clientY - startY;
+            updateTransform();
+        });
+    </script>
+</body>
+
+</html>

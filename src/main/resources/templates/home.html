@@ -88,18 +88,23 @@
         </div>
     </div>
 
-    <div class="container mb-5">
+    <div id="home-main-container" th:fragment="home_content" class="container mb-5">
         <div class="row">
             <div class="col-lg-3 d-none d-lg-block">
                 <div class="sticky-top" style="top: 100px;">
                     <h6 class="fw-bold text-uppercase text-muted ls-1 mb-3">Chuyên mục</h6>
                     <div class="list-group glass-card border-0 mb-4">
-                        <a th:href="@{/(sort=${currentSort})}"
+                        <a th:href="@{/(sort=${currentSort})}" onclick="loadContent(event, this.getAttribute('href'))"
                             class="list-group-item list-group-item-action border-0 fw-bold"
                             th:classappend="${currentDeptId == null} ? 'active bg-success bg-opacity-10 text-success' : 'bg-transparent'">
                             <i class="fa-solid fa-layer-group me-2"></i> Tất cả câu hỏi
                         </a>
+                        <a th:href="@{/map}"
+                            class="list-group-item list-group-item-action border-0 fw-bold bg-transparent">
+                            <i class="fa-solid fa-map-location-dot me-2"></i> Tra cứu Bản đồ
+                        </a>
                         <a th:each="dept : ${departments}" th:href="@{/(dept=${dept.id}, sort=${currentSort})}"
+                            onclick="loadContent(event, this.getAttribute('href'))"
                             class="list-group-item list-group-item-action border-0"
                             th:classappend="${currentDeptId == dept.id} ? 'active bg-success bg-opacity-10 text-success fw-bold' : 'bg-transparent'">
                             <i class="fa-solid fa-building-columns me-2"></i> <span th:text="${dept.name}">Khoa</span>
@@ -111,7 +116,8 @@
             <div class="col-lg-9">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="fw-bold"><i class="fa-regular fa-comments me-2 text-success"></i>Thảo luận mới nhất</h4>
-                    <select class="form-select w-auto border-0 shadow-sm glass-card" onchange="location = this.value;">
+                    <select class="form-select w-auto border-0 shadow-sm glass-card"
+                        onchange="loadContent(null, this.value)">
                         <option th:value="@{/(dept=${currentDeptId}, sort='newest')}"
                             th:selected="${currentSort == 'newest' || currentSort == null}">Mới nhất</option>
                         <option th:value="@{/(dept=${currentDeptId}, sort='popular')}"
@@ -178,6 +184,35 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function loadContent(event, url) {
+            if (event) event.preventDefault();
+
+            // Effect opacity to indicate loading
+            const container = document.getElementById('home-main-container');
+            container.style.opacity = '0.5';
+            container.style.transition = 'opacity 0.2s';
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(response => response.text())
+                .then(html => {
+                    // Replace the container
+                    container.outerHTML = html;
+                    window.history.pushState(null, '', url);
+                })
+                .catch(error => {
+                    console.error('Error loading content:', error);
+                    container.style.opacity = '1'; // revert on error
+                    window.location.href = url; // Fallback to full reload
+                });
+        }
+
+        // Handle Back/Forward buttons
+        window.onpopstate = function () {
+            location.reload();
+        };
+    </script>
 
     <footer class="bg-white py-4 mt-auto border-top">
         <div class="container text-center text-muted">

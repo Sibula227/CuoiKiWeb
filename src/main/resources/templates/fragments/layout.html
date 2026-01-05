@@ -33,6 +33,11 @@
                             <i class="fa-solid fa-circle-question me-2"></i> Đặt câu hỏi
                         </a>
                     </li>
+                    <li>
+                        <a th:href="@{/map}" class="nav-link mb-2 text-dark">
+                            <i class="fa-solid fa-map-location-dot me-2"></i> Tra cứu Bản đồ
+                        </a>
+                    </li>
                 </div>
 
                 <div sec:authorize="hasAnyAuthority('ADMIN', 'ADVISOR')">
