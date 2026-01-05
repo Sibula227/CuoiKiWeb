@@ -14,4 +14,10 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     List<ChatMessage> findBySessionOrderByCreatedAtAsc(ChatSession session);
 
     List<ChatMessage> findBySessionOrderByCreatedAtDesc(ChatSession session, Pageable pageable);
+
+    void deleteBySessionIn(List<ChatSession> sessions);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM ChatMessage m WHERE m.session.user = :user")
+    void deleteAllByUser(@org.springframework.data.repository.query.Param("user") com.hcmute.qaute.entity.User user);
 }

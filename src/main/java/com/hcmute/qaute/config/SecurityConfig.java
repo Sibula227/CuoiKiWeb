@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/login", "/register", "/error").permitAll()
 
                         // 3. Cho phép GraphQL và Chatbot
-                        .requestMatchers("/graphql/**", "/graphiql/**", "/api/chat").permitAll()
+                        .requestMatchers("/graphql/**", "/graphiql/**", "/api/chat/**").permitAll()
 
                         // 4. Phân quyền cho các Role cụ thể
                         .requestMatchers("/student/**").hasAuthority("STUDENT")
@@ -66,7 +66,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(accessDeniedHandler()))
                 // Tắt CSRF cho GraphQL và Chat API
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/graphql/**", "/api/chat"));
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/graphql/**", "/api/chat/**"));
 
         return http.build();
     }

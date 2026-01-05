@@ -33,10 +33,13 @@ public class ChatController {
     @PostMapping("/new")
     public Map<String, String> newChat(java.security.Principal principal) {
         String username = (principal != null) ? principal.getName() : "anonymous";
-        geminiService.createSession(username);
+        System.out.println("DEBUG: /api/chat/new called for user: " + username); // Debugging
+
+        // CHANGE: Instead of creating a new session, we now CLEAR all history
+        geminiService.clearHistory(username);
 
         Map<String, String> result = new HashMap<>();
-        result.put("message", "New session created");
+        result.put("message", "History cleared");
         return result;
     }
 

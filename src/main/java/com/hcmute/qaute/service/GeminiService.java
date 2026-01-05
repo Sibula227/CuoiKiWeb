@@ -206,6 +206,27 @@ public class GeminiService {
         }
     }
 
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
+
+    @org.springframework.transaction.annotation.Transactional
+    public void clearHistory(String username) {
+        log.info("Request to clear history for user: {}", username);
+        com.hcmute.qaute.entity.User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+        // Direct DB deletion as requested
+        chatMessageRepository.deleteAllByUser(user);
+        chatSessionRepository.deleteAllByUser(user);
+
+        // Force flush to DB
+        entityManager.flush();
+        entityManager.clear();
+
+        log.info("Deleted all chat history for user {} directly from DB.", username);
+        auditLogService.log(username, "DELETE_HISTORY", "ChatSession", "ALL", "Deleted all chat history (Direct DB)");
+    }
+
     public void createSession(String username) {
         com.hcmute.qaute.entity.User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));

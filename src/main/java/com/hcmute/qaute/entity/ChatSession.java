@@ -41,4 +41,5 @@ public class ChatSession {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

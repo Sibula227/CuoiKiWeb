@@ -96,7 +96,13 @@ class ChatBotUI {
 
         const refreshBtn = document.querySelector(".refresh-btn");
         if (refreshBtn) {
-            refreshBtn.addEventListener("click", () => this.startNewChat());
+            console.log("Refresh button found, adding listener"); // Debug
+            refreshBtn.addEventListener("click", () => {
+                console.log("Refresh button clicked"); // Debug
+                this.startNewChat();
+            });
+        } else {
+            console.error("Refresh button NOT found in DOM"); // Debug
         }
 
         if (this.elements.sendBtn) {
@@ -134,15 +140,18 @@ class ChatBotUI {
     }
 
     async startNewChat() {
+        console.log("startNewChat called"); // Debug
         try {
+            console.log("Sending POST to " + this.service.API_URL + "/new"); // Debug
             const response = await fetch(this.service.API_URL + "/new", { method: "POST" });
+            console.log("Response status:", response.status); // Debug
             if (response.ok) {
                 this.elements.chatbox.innerHTML = '';
                 this.elements.chatInput.value = "";
                 this.adjustInputHeight();
 
                 // Add Welcome Message
-                const welcomeDiv = this.createChatBubble("Đã bắt đầu đoạn chat mới. Bạn cần giúp gì không?", "incoming");
+                const welcomeDiv = this.createChatBubble("Đã xóa toàn bộ lịch sử chat. Bạn cần giúp gì không?", "incoming");
                 this.elements.chatbox.appendChild(welcomeDiv);
             }
         } catch (error) {
