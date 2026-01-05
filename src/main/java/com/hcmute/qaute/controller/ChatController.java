@@ -14,9 +14,16 @@ public class ChatController {
     private GeminiService geminiService;
 
     @PostMapping
-    public Map<String, String> chat(@RequestBody Map<String, String> payload) {
+    public Map<String, String> chat(@RequestBody Map<String, String> payload, java.security.Principal principal) {
         String message = payload.get("message");
-        String response = geminiService.getChatResponse(message);
+        String username = (principal != null) ? principal.getName() : "anonymous";
+
+        // If anonymous, we might want to prevent chat or use a dummy session
+        // For now, let's assume login is required or handle anonymous in service if
+        // needed
+        // But better to enforce login.
+
+        String response = geminiService.getChatResponse(message, username);
 
         Map<String, String> result = new HashMap<>();
         result.put("response", response);

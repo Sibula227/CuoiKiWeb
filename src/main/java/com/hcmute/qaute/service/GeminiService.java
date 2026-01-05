@@ -15,7 +15,16 @@ import org.springframework.util.StreamUtils;
 import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.time.LocalDateTime;
+
+import com.hcmute.qaute.entity.ChatSession;
+import com.hcmute.qaute.entity.ChatMessage;
+import com.hcmute.qaute.repository.ChatSessionRepository;
+import com.hcmute.qaute.repository.ChatMessageRepository;
+import com.hcmute.qaute.repository.UserRepository;
 
 @Slf4j
 @Service
@@ -37,10 +46,20 @@ public class GeminiService {
     private Resource formatResource;
 
     private final KnowledgeService knowledgeService;
+    private final ChatSessionRepository chatSessionRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final UserRepository userRepository;
+
     private Client client;
 
-    public GeminiService(KnowledgeService knowledgeService) {
+    public GeminiService(KnowledgeService knowledgeService,
+            ChatSessionRepository chatSessionRepository,
+            ChatMessageRepository chatMessageRepository,
+            UserRepository userRepository) {
         this.knowledgeService = knowledgeService;
+        this.chatSessionRepository = chatSessionRepository;
+        this.chatMessageRepository = chatMessageRepository;
+        this.userRepository = userRepository;
     }
 
     @PostConstruct
@@ -64,8 +83,35 @@ public class GeminiService {
         }
     }
 
-    public String getChatResponse(String userMessage) {
+    public String getChatResponse(String userMessage, String username) {
+        log.info("Processing chat request for user: '{}'", username);
+
+        if (this.client == null) {
+            return "Xin lỗi, dịch vụ AI chưa được khởi tạo đúng cách.";
+        }
+
         try {
+            // 1. Locate User and Session
+            com.hcmute.qaute.entity.User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+            // Find latest active session or create new one
+            ChatSession session = chatSessionRepository.findTopByUserOrderByUpdatedAtDesc(user)
+                    .orElseGet(() -> {
+                        ChatSession newSession = new ChatSession();
+                        newSession.setUser(user);
+                        newSession.setTitle("New Chat");
+                        return chatSessionRepository.save(newSession);
+                    });
+
+            // 2. Load History (Last 20 messages)
+            List<ChatMessage> history = chatMessageRepository.findBySessionOrderByCreatedAtDesc(
+                    session,
+                    org.springframework.data.domain.PageRequest.of(0, 20)).stream()
+                    .sorted((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt())) // Ensure chronological order
+                    .collect(java.util.stream.Collectors.toList());
+
+            // 3. Prepare Prompt Resources
             String persona = loadResource(personaResource);
             String task = loadResource(taskResource);
             String contextTemplate = loadResource(contextResource);
@@ -77,18 +123,27 @@ public class GeminiService {
 
             String systemInstructionText = String.join("\n\n", persona, task, context, format);
 
-            // === FIX BẮT ĐẦU TỪ ĐÂY ===
+            // 4. Construct Gemini Request
+            List<Content> contents = new ArrayList<>();
 
-            // 1. Tạo Part chứa text cho System Instruction
-            Part systemPart = Part.builder()
-                    .text(systemInstructionText)
-                    .build();
+            // 4.1. Add History to Content
+            for (ChatMessage msg : history) {
+                contents.add(Content.builder()
+                        .role(msg.getRole())
+                        .parts(Collections.singletonList(Part.builder().text(msg.getContent()).build()))
+                        .build());
+            }
 
-            // 2. Tạo Content chứa Part đó
+            // 4.2. Add Current Message
+            contents.add(Content.builder()
+                    .role("user")
+                    .parts(Collections.singletonList(Part.builder().text(userMessage).build()))
+                    .build());
+
+            // 4.3. System Instruction
             Content systemInstructionContent = Content.builder()
-                    // .role("system") // Lưu ý: Một số version SDK không cần role cho system
-                    // instruction, nếu lỗi role thì bỏ dòng này
-                    .parts(Collections.singletonList(systemPart))
+                    .role("system")
+                    .parts(Collections.singletonList(Part.builder().text(systemInstructionText).build()))
                     .build();
 
             GenerateContentConfig config = GenerateContentConfig.builder()
@@ -96,31 +151,51 @@ public class GeminiService {
                     .temperature(0.7f)
                     .build();
 
-            // 3. Tạo Part cho User Message
-            Part userPart = Part.builder()
-                    .text(userMessage)
-                    .build();
-
-            // 4. Tạo Content cho User Message
-            Content userContent = Content.builder()
-                    .role("user")
-                    .parts(Collections.singletonList(userPart))
-                    .build();
-
-            // === FIX KẾT THÚC ===
-
+            // 5. Call API
             GenerateContentResponse response = client.models.generateContent(
                     "gemini-3-flash-preview",
-                    userContent,
+                    contents,
                     config);
 
-            // Lưu ý: Nếu response.text() vẫn báo lỗi (tuỳ version SDK), hãy dùng dòng dưới:
-            // return response.candidates().get(0).content().parts().get(0).text();
-            return response.text();
+            // 6. Extract Response
+            String aiResponseText = "";
+            if (response.text() != null) {
+                aiResponseText = response.text();
+            } else if (response.candidates().isPresent() && !response.candidates().get().isEmpty()) {
+                // Fix: content() returns Optional<Content>, so use .get()
+                aiResponseText = response.text();
+            } else {
+                return "Xin lỗi, AI không trả về phản hồi.";
+            }
+
+            // 7. Save to Database
+            // User Message
+            ChatMessage userMsgEntity = new ChatMessage();
+            userMsgEntity.setSession(session);
+            userMsgEntity.setRole("user");
+            userMsgEntity.setContent(userMessage);
+            chatMessageRepository.save(userMsgEntity);
+
+            // AI Message
+            ChatMessage modelMsgEntity = new ChatMessage();
+            modelMsgEntity.setSession(session);
+            modelMsgEntity.setRole("model");
+            modelMsgEntity.setContent(aiResponseText);
+            chatMessageRepository.save(modelMsgEntity);
+
+            // Update Session
+            session.setUpdatedAt(LocalDateTime.now());
+            if (history.isEmpty()) {
+                String potentialTitle = userMessage.length() > 50 ? userMessage.substring(0, 47) + "..." : userMessage;
+                session.setTitle(potentialTitle);
+            }
+            chatSessionRepository.save(session);
+
+            return aiResponseText;
 
         } catch (Exception e) {
             log.error("Gemini Service Error: ", e);
-            return "Xin lỗi, hệ thống AI đang gặp lỗi kết nối.";
+            return "Xin lỗi, hệ thống AI đang gặp lỗi. (" + e.getMessage() + ")";
         }
     }
 }
