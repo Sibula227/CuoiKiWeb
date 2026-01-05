@@ -35,7 +35,8 @@
                             <p class="text-muted mb-0" th:text="${user.role.description}">Role</p>
                         </div>
 
-                        <form th:action="@{/profile/update}" th:object="${user}" method="post">
+                        <form th:action="@{/profile/update(${_csrf.parameterName}=${_csrf.token})}" th:object="${user}"
+                            method="post" enctype="multipart/form-data">
                             <div class="row g-4">
                                 <!-- Họ tên -->
                                 <div class="col-md-6">
@@ -83,27 +84,27 @@
                                     </div>
                                 </div>
 
-                                <!-- Avatar URL -->
+                                <!-- Avatar Upload -->
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-muted small text-uppercase">Link Ảnh đại diện
-                                        (URL)</label>
+                                    <label class="form-label fw-bold text-muted small text-uppercase">Tải ảnh đại diện
+                                        mới</label>
                                     <div class="input-group">
+                                        <input type="file" name="avatarFile" class="form-control" accept="image/*"
+                                            onchange="document.getElementById('avatarPreview').src = window.URL.createObjectURL(this.files[0])">
                                         <span class="input-group-text bg-light border-0"><i
-                                                class="fa-solid fa-image text-muted"></i></span>
-                                        <input type="text" class="form-control bg-light border-0 py-2"
-                                            th:field="*{avatarUrl}" placeholder="https://example.com/my-avatar.jpg"
-                                            oninput="document.getElementById('avatarPreview').src = this.value || 'https://ui-avatars.com/api/?name=User'">
+                                                class="fa-solid fa-cloud-arrow-up text-muted"></i></span>
                                     </div>
-                                    <div class="form-text text-muted small mt-1">Dán đường dẫn ảnh từ internet vào đây
-                                        để cập nhật avatar.</div>
-                                </div>
+                                    <div class="form-text text-muted small mt-1">Chọn ảnh từ máy của bạn (Dung lượng <
+                                            5MB).</div>
+                                    </div>
 
-                                <div class="col-12 mt-4 text-end">
-                                    <button type="submit" class="btn btn-primary px-4 py-2">
-                                        <i class="fa-solid fa-save me-2"></i> Lưu thay đổi
-                                    </button>
+
+                                    <div class="col-12 mt-4 text-end">
+                                        <button type="submit" class="btn btn-primary px-4 py-2">
+                                            <i class="fa-solid fa-save me-2"></i> Lưu thay đổi
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
                         </form>
                     </div>
 

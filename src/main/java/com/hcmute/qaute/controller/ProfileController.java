@@ -20,9 +20,6 @@ public class ProfileController {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     @GetMapping
     public String showProfile(Model model, Authentication authentication) {
         String username = authentication.getName();
@@ -34,6 +31,7 @@ public class ProfileController {
 
     @PostMapping("/update")
     public String updateProfile(@ModelAttribute("user") User updatedUser,
+            @org.springframework.web.bind.annotation.RequestParam("avatarFile") org.springframework.web.multipart.MultipartFile avatarFile,
             Authentication authentication,
             RedirectAttributes ra) {
         String username = authentication.getName();
@@ -45,13 +43,32 @@ public class ProfileController {
         currentUser.setEmail(updatedUser.getEmail());
         currentUser.setPhone(updatedUser.getPhone());
         currentUser.setStudentIdCode(updatedUser.getStudentIdCode());
-        currentUser.setAvatarUrl(updatedUser.getAvatarUrl());
+
+        // Xử lý upload ảnh (Base64)
+        if (!avatarFile.isEmpty()) {
+            try {
+                // Kiểm tra loại file (chỉ cho phép ảnh)
+                String contentType = avatarFile.getContentType();
+                if (contentType != null && contentType.startsWith("image/")) {
+                    byte[] bytes = avatarFile.getBytes();
+                    String base64Image = java.util.Base64.getEncoder().encodeToString(bytes);
+                    // Lưu dạng Data URI: data:image/png;base64,.....
+                    currentUser.setAvatarUrl("data:" + contentType + ";base64," + base64Image);
+                } else {
+                    ra.addFlashAttribute("errorMessage", "Vui lòng chỉ tải lên file ảnh!");
+                    return "redirect:/profile";
+                }
+            } catch (java.io.IOException e) {
+                ra.addFlashAttribute("errorMessage", "Lỗi khi xử lý ảnh tải lên.");
+                return "redirect:/profile";
+            }
+        }
 
         try {
             userRepository.save(currentUser);
             ra.addFlashAttribute("successMessage", "Cập nhật hồ sơ thành công!");
         } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "Lỗi: Email hoặc thông tin không hợp lệ (có thể đã tồn tại).");
+            ra.addFlashAttribute("errorMessage", "Lỗi hệ thống: " + e.getMessage());
         }
 
         return "redirect:/profile";

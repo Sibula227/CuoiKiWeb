@@ -28,13 +28,14 @@ public class User {
 
     // Trong ERD là string, khớp với code cũ
     @Column(name = "student_id")
-    private String studentIdCode; 
+    private String studentIdCode;
 
     // --- CÁC TRƯỜNG BỔ SUNG THEO ERD ---
     @Column(length = 20)
     private String phone;
 
-    @Column(name = "avatar_url", length = 500)
+    @Lob
+    @Column(name = "avatar_url", columnDefinition = "LONGTEXT")
     private String avatarUrl;
 
     @Column(name = "is_active")
@@ -55,13 +56,15 @@ public class User {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        if (this.isActive == null) this.isActive = true;
+        if (this.isActive == null)
+            this.isActive = true;
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
     @Column(name = "reset_password_token")
     private String resetPasswordToken;
 
