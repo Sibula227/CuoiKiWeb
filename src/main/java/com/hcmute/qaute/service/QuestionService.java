@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface QuestionService {
     QuestionResponseDTO createQuestion(QuestionCreateDTO dto, String username);
+
     List<QuestionResponseDTO> getMyQuestions(String username);
 
     // Dành cho Dashboard (Phân quyền Admin/Advisor)
@@ -17,4 +18,7 @@ public interface QuestionService {
     // ------------------------
 
     QuestionResponseDTO getQuestionDetail(Long id);
+
+    // Tìm kiếm câu hỏi
+    List<QuestionResponseDTO> searchQuestions(String keyword);
 }

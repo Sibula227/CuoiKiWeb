@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <title>Diễn đàn Hỏi đáp QAUTE</title>
@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
@@ -15,9 +16,9 @@
             <a class="navbar-brand fw-bold text-success fs-3" href="/">
                 <i class="fa-solid fa-leaf me-2"></i>QAUTE
             </a>
-            
+
             <div class="d-flex align-items-center gap-3">
-                
+
                 <a th:href="@{/student/create-question}" class="btn btn-primary text-white fw-bold shadow-sm">
                     <i class="fa-solid fa-plus me-2"></i> Đặt câu hỏi
                 </a>
@@ -28,9 +29,10 @@
                 </div>
 
                 <div sec:authorize="isAuthenticated()" class="dropdown">
-                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" data-bs-toggle="dropdown">
-                        <img th:src="'https://ui-avatars.com/api/?name=' + ${#authentication.name} + '&background=10b981&color=fff'" 
-                             width="40" height="40" class="rounded-circle me-2 border">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark"
+                        data-bs-toggle="dropdown">
+                        <img th:src="'https://ui-avatars.com/api/?name=' + ${#authentication.name} + '&background=10b981&color=fff'"
+                            width="40" height="40" class="rounded-circle me-2 border">
                         <div class="d-none d-sm-block text-start">
                             <div class="fw-bold small" sec:authentication="name">User</div>
                             <div class="text-muted small" style="font-size: 0.7rem;">Thành viên</div>
@@ -38,15 +40,20 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0">
                         <li sec:authorize="hasAuthority('STUDENT')">
-                            <a class="dropdown-item" th:href="@{/student/dashboard}"><i class="fa-solid fa-gauge me-2"></i> Dashboard cá nhân</a>
+                            <a class="dropdown-item" th:href="@{/student/dashboard}"><i
+                                    class="fa-solid fa-gauge me-2"></i> Dashboard cá nhân</a>
                         </li>
                         <li sec:authorize="hasAnyAuthority('ADMIN', 'ADVISOR')">
-                            <a class="dropdown-item" th:href="@{/admin/dashboard}"><i class="fa-solid fa-gauge me-2"></i> Trang quản trị</a>
+                            <a class="dropdown-item" th:href="@{/admin/dashboard}"><i
+                                    class="fa-solid fa-gauge me-2"></i> Trang quản trị</a>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li>
                             <form th:action="@{/logout}" method="post">
-                                <button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-sign-out-alt me-2"></i> Đăng xuất</button>
+                                <button type="submit" class="dropdown-item text-danger"><i
+                                        class="fa-solid fa-sign-out-alt me-2"></i> Đăng xuất</button>
                             </form>
                         </li>
                     </ul>
@@ -59,14 +66,16 @@
         <div class="container text-center">
             <h1 class="fw-bold display-5 text-dark mb-3">Cổng Tư vấn Sinh viên QAUTE</h1>
             <p class="lead text-muted mb-4">Nơi giải đáp mọi thắc mắc về Đào tạo, Học vụ, Công tác sinh viên...</p>
-            
+
             <div class="row justify-content-center">
                 <div class="col-md-8">
-                    <div class="input-group input-group-lg shadow glass-card p-1">
-                        <span class="input-group-text border-0 bg-transparent"><i class="fa-solid fa-search text-success"></i></span>
-                        <input type="text" class="form-control border-0 bg-transparent" placeholder="Bạn đang tìm kiếm thông tin gì?">
-                        <button class="btn btn-primary rounded-3 px-4 fw-bold">Tìm kiếm</button>
-                    </div>
+                    <form action="/search" method="get" class="input-group input-group-lg shadow glass-card p-1">
+                        <span class="input-group-text border-0 bg-transparent"><i
+                                class="fa-solid fa-search text-success"></i></span>
+                        <input type="text" name="keyword" class="form-control border-0 bg-transparent"
+                            placeholder="Bạn đang tìm kiếm thông tin gì?" required>
+                        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold">Tìm kiếm</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -78,7 +87,8 @@
                 <div class="sticky-top" style="top: 100px;">
                     <h6 class="fw-bold text-uppercase text-muted ls-1 mb-3">Chuyên mục</h6>
                     <div class="list-group glass-card border-0 mb-4">
-                        <a href="#" class="list-group-item list-group-item-action border-0 active bg-success bg-opacity-10 text-success fw-bold">
+                        <a href="#"
+                            class="list-group-item list-group-item-action border-0 active bg-success bg-opacity-10 text-success fw-bold">
                             <i class="fa-solid fa-layer-group me-2"></i> Tất cả câu hỏi
                         </a>
                         <a href="#" class="list-group-item list-group-item-action border-0 bg-transparent">
@@ -107,10 +117,10 @@
                 <div th:each="q : ${questions}" class="glass-card p-4 mb-3 card-hover-effect">
                     <div class="d-flex">
                         <div class="me-3 d-none d-sm-block">
-                            <img th:src="${q.studentAvatar != null ? q.studentAvatar : 'https://ui-avatars.com/api/?name=' + q.studentName}" 
-                                 class="rounded-circle shadow-sm" width="48" height="48">
+                            <img th:src="${q.studentAvatar != null ? q.studentAvatar : 'https://ui-avatars.com/api/?name=' + q.studentName}"
+                                class="rounded-circle shadow-sm" width="48" height="48">
                         </div>
-                        
+
                         <div class="flex-grow-1">
                             <div class="d-flex justify-content-between mb-2">
                                 <div>
@@ -118,36 +128,40 @@
                                     <span class="text-muted mx-2">•</span>
                                     <small class="text-muted" th:text="${q.timeAgo}">2 giờ trước</small>
                                 </div>
-                                <span class="badge rounded-pill" 
-                                      th:classappend="${q.status.name() == 'ANSWERED'} ? 'bg-success bg-opacity-10 text-success' : 'bg-warning bg-opacity-10 text-warning'"
-                                      th:text="${q.status.name() == 'ANSWERED' ? 'Đã giải quyết' : 'Đang thảo luận'}">
+                                <span class="badge rounded-pill"
+                                    th:classappend="${q.status.name() == 'ANSWERED'} ? 'bg-success bg-opacity-10 text-success' : 'bg-warning bg-opacity-10 text-warning'"
+                                    th:text="${q.status.name() == 'ANSWERED' ? 'Đã giải quyết' : 'Đang thảo luận'}">
                                 </span>
                             </div>
-                            
+
                             <h5 class="fw-bold mb-2">
-                                <a th:href="@{/student/question/{id}(id=${q.id})}" class="text-decoration-none text-dark hover-success">
+                                <a th:href="@{/student/question/{id}(id=${q.id})}"
+                                    class="text-decoration-none text-dark hover-success">
                                     <span th:text="${q.title}">Tiêu đề câu hỏi...</span>
                                 </a>
                             </h5>
-                            
+
                             <p class="text-muted text-truncate mb-3" style="max-width: 700px;" th:text="${q.content}">
                                 Nội dung tóm tắt...
                             </p>
-                            
+
                             <div class="d-flex align-items-center gap-3">
                                 <span class="badge bg-light text-dark border px-3 py-2">
-                                    <i class="fa-solid fa-building me-1"></i> <span th:text="${q.departmentName}">Khoa/Phòng</span>
+                                    <i class="fa-solid fa-building me-1"></i> <span
+                                        th:text="${q.departmentName}">Khoa/Phòng</span>
                                 </span>
-                                <a th:href="@{/student/question/{id}(id=${q.id})}" class="btn btn-sm btn-link text-decoration-none text-success fw-bold">
+                                <a th:href="@{/student/question/{id}(id=${q.id})}"
+                                    class="btn btn-sm btn-link text-decoration-none text-success fw-bold">
                                     Xem chi tiết <i class="fa-solid fa-arrow-right ms-1"></i>
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div th:if="${questions.isEmpty()}" class="text-center py-5">
-                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="80" class="opacity-50 mb-3">
+                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="80"
+                        class="opacity-50 mb-3">
                     <p class="text-muted">Chưa có câu hỏi nào được đặt ra.</p>
                 </div>
 
@@ -162,7 +176,8 @@
     </footer>
 
     <div th:replace="~{fragments/chatbot :: chatbot}"></div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

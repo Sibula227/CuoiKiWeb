@@ -24,7 +24,21 @@ public class HomeController {
         model.addAttribute("questions", questions);
         return "home"; // Trả về file templates/home.html
     }
-    
+
     // Xem chi tiết (Ai cũng xem được, nhưng nút Reply sẽ bắt login)
     // Lưu ý: Logic lấy chi tiết bạn có thể tái sử dụng từ service
+
+    // Tìm kiếm thông minh
+
+    @GetMapping("/search")
+    public String search(@org.springframework.web.bind.annotation.RequestParam("keyword") String keyword, Model model) {
+        // Gọi Service tìm kiếm
+        List<QuestionResponseDTO> results = questionService.searchQuestions(keyword);
+
+        // Đẩy dữ liệu ra view
+        model.addAttribute("questions", results);
+        model.addAttribute("keyword", keyword);
+
+        return "student/search_results"; // Trả về trang kết quả (sẽ tạo ở bước sau)
+    }
 }
