@@ -29,4 +29,14 @@ public class ChatController {
         result.put("response", response);
         return result;
     }
+
+    @PostMapping("/new")
+    public Map<String, String> newChat(java.security.Principal principal) {
+        String username = (principal != null) ? principal.getName() : "anonymous";
+        geminiService.createSession(username);
+
+        Map<String, String> result = new HashMap<>();
+        result.put("message", "New session created");
+        return result;
+    }
 }

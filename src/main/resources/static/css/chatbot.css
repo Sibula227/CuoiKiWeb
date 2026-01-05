@@ -73,9 +73,19 @@
     position: absolute;
     right: 15px;
     top: 50%;
-    display: none;
+    color: #fff;
     cursor: pointer;
+    display: none;
     transform: translateY(-50%);
+}
+
+.chatbot header .refresh-btn {
+    right: 55px;
+    display: block;
+}
+
+.chatbot header .close-btn {
+    right: 15px;
 }
 
 header h2 {

@@ -198,4 +198,14 @@ public class GeminiService {
             return "Xin lỗi, hệ thống AI đang gặp lỗi. (" + e.getMessage() + ")";
         }
     }
+
+    public void createSession(String username) {
+        com.hcmute.qaute.entity.User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+        ChatSession newSession = new ChatSession();
+        newSession.setUser(user);
+        newSession.setTitle("New Chat");
+        chatSessionRepository.save(newSession);
+    }
 }

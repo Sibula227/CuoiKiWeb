@@ -38,26 +38,52 @@ class ChatBotUI {
             closeBtn: document.querySelector(".close-btn"),
             chatbox: document.querySelector(".chatbox"),
             chatInput: document.querySelector(".chat-input textarea"),
-            sendBtn: document.querySelector(".chat-input span"),
-            body: document.body
+            sendBtn: document.querySelector(".send-btn"),
+            body: document.body,
+            quickBtns: document.querySelectorAll(".quick-btn")
         };
 
-        this.inputInitHeight = this.elements.chatInput.scrollHeight;
+        this.inputInitHeight = 24;
         this.initEventListeners();
     }
 
     initEventListeners() {
-        this.elements.toggler.addEventListener("click", () => this.toggleChat());
-        this.elements.closeBtn.addEventListener("click", () => this.imageChat(false));
-        this.elements.sendBtn.addEventListener("click", () => this.handleChat());
+        if (this.elements.toggler) {
+            this.elements.toggler.addEventListener("click", () => this.toggleChat());
+        }
 
-        this.elements.chatInput.addEventListener("input", () => this.adjustInputHeight());
-        this.elements.chatInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
-                e.preventDefault();
-                this.handleChat();
-            }
-        });
+        if (this.elements.closeBtn) {
+            this.elements.closeBtn.addEventListener("click", () => this.imageChat(false));
+        }
+
+        const refreshBtn = document.querySelector(".refresh-btn");
+        if (refreshBtn) {
+            refreshBtn.addEventListener("click", () => this.startNewChat());
+        }
+
+        if (this.elements.sendBtn) {
+            this.elements.sendBtn.addEventListener("click", () => this.handleChat());
+        }
+
+        // Quick Chips Listeners
+        if (this.elements.quickBtns) {
+            this.elements.quickBtns.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    this.elements.chatInput.value = btn.textContent.trim().replace(/\s+/g, ' ');
+                    this.handleChat();
+                });
+            });
+        }
+
+        if (this.elements.chatInput) {
+            this.elements.chatInput.addEventListener("input", () => this.adjustInputHeight());
+            this.elements.chatInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
+                    e.preventDefault();
+                    this.handleChat();
+                }
+            });
+        }
     }
 
     toggleChat() {
@@ -69,73 +95,124 @@ class ChatBotUI {
         this.elements.body.classList.remove("show-chatbot");
     }
 
+    async startNewChat() {
+        try {
+            const response = await fetch(this.service.API_URL + "/new", { method: "POST" });
+            if (response.ok) {
+                this.elements.chatbox.innerHTML = '';
+                this.elements.chatInput.value = "";
+                this.adjustInputHeight();
+
+                // Add Welcome Message
+                const welcomeDiv = this.createChatBubble("Đã bắt đầu đoạn chat mới. Bạn cần giúp gì không?", "incoming");
+                this.elements.chatbox.appendChild(welcomeDiv);
+            }
+        } catch (error) {
+            console.error("Failed to start new chat:", error);
+        }
+    }
+
     adjustInputHeight() {
         this.elements.chatInput.style.height = `${this.inputInitHeight}px`;
         this.elements.chatInput.style.height = `${this.elements.chatInput.scrollHeight}px`;
     }
 
-    createChatLi(message, className) {
-        const chatLi = document.createElement("li");
-        chatLi.classList.add("chat", className);
-        let chatContent = className === "outgoing"
-            ? `<p></p>`
-            : `<span class="material-symbols-outlined"><i class="fa-solid fa-robot"></i></span><p></p>`;
-        chatLi.innerHTML = chatContent;
-        chatLi.querySelector("p").textContent = message;
-        return chatLi;
+    createChatBubble(message, type) {
+        const isOutgoing = type === 'outgoing';
+        const wrapper = document.createElement("div");
+
+        if (isOutgoing) {
+            // User Message Structure
+            wrapper.className = "flex items-end justify-end gap-3 w-full"; // Added w-full
+            wrapper.innerHTML = `
+                <div class="flex flex-col gap-1 items-end max-w-[80%]">
+                    <div class="p-3 bg-primary text-white rounded-2xl rounded-br-sm shadow-md shadow-emerald-500/10">
+                        <p class="text-sm leading-relaxed whitespace-pre-wrap">${message}</p>
+                    </div>
+                </div>
+                <div class="size-8 rounded-full bg-slate-200 shrink-0 overflow-hidden flex items-center justify-center text-slate-500">
+                    <span class="material-symbols-outlined text-sm">person</span>
+                </div>
+            `;
+        } else {
+            // Bot Message Structure
+            wrapper.className = "flex items-end gap-3 max-w-[90%]";
+            wrapper.innerHTML = `
+                <div class="size-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 overflow-hidden">
+                     <span class="material-symbols-outlined text-emerald-600 text-sm">smart_toy</span>
+                </div>
+                <div class="flex flex-col gap-1 w-full"> 
+                    <span class="text-[10px] text-slate-500 ml-1">QAUTE Bot</span>
+                    <div class="p-3 bg-slate-50 text-slate-800 rounded-2xl rounded-bl-sm border border-slate-100 shadow-sm w-fit">
+                        <p class="text-sm leading-relaxed message-content">${message}</p>
+                    </div>
+                </div>
+            `;
+        }
+        return wrapper;
     }
 
     async handleChat() {
         const userMessage = this.elements.chatInput.value.trim();
         if (!userMessage) return;
 
-        // Reset input
         this.elements.chatInput.value = "";
-        this.elements.chatInput.style.height = `${this.inputInitHeight}px`;
+        this.adjustInputHeight();
 
-        // Add user message
-        this.elements.chatbox.appendChild(this.createChatLi(userMessage, "outgoing"));
+        // 1. Append User Message
+        this.elements.chatbox.appendChild(this.createChatBubble(userMessage, "outgoing"));
         this.scrollToBottom();
 
-        // Add thinking message
-        const incomingChatLi = this.createChatLi("Đang suy nghĩ...", "incoming");
+        // 2. Append Thinking Bubble
+        const incomingDiv = this.createChatBubble("Đang suy nghĩ...", "incoming");
+        this.elements.chatbox.appendChild(incomingDiv);
+        this.scrollToBottom();
 
-        // Small delay to simulate processing start
-        setTimeout(async () => {
-            this.elements.chatbox.appendChild(incomingChatLi);
-            this.scrollToBottom();
-
-            try {
-                const data = await this.service.sendMessage(userMessage);
-                this.renderResponse(incomingChatLi, data.response);
-            } catch (error) {
-                this.renderError(incomingChatLi);
-            }
-        }, 600);
-    }
-
-    renderResponse(chatElement, rawMarkdown) {
-        const messageElement = chatElement.querySelector("p");
-        // Ensure marked and DOMPurify are available (loaded via CDN in HTML)
-        if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
-            const rawHtml = marked.parse(rawMarkdown);
-            const safeHtml = DOMPurify.sanitize(rawHtml);
-            messageElement.innerHTML = safeHtml;
-        } else {
-            messageElement.textContent = rawMarkdown; // Fallback
+        // 3. Fetch Response
+        try {
+            const data = await this.service.sendMessage(userMessage);
+            const messageP = incomingDiv.querySelector(".message-content");
+            this.renderResponse(messageP, data.response);
+        } catch (error) {
+            const messageP = incomingDiv.querySelector(".message-content");
+            messageP.textContent = "Xin lỗi, đã có lỗi xảy ra.";
+            messageP.classList.add("text-red-500");
         }
+    }
+
+    renderResponse(element, rawMarkdown) {
+        if (!rawMarkdown) return;
+        let cleanedText = rawMarkdown.replace(/\n\s*\n\s*\n/g, '\n\n');
+
+        if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+            const rawHtml = marked.parse(cleanedText);
+            const safeHtml = DOMPurify.sanitize(rawHtml);
+            element.innerHTML = safeHtml;
+        } else {
+            element.textContent = cleanedText;
+        }
+
+        this.styleMarkdownContent(element);
         this.scrollToBottom();
     }
 
-    renderError(chatElement) {
-        const messageElement = chatElement.querySelector("p");
-        messageElement.textContent = "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.";
-        messageElement.style.color = "#ef4444"; // Red error color
-        this.scrollToBottom();
+    styleMarkdownContent(element) {
+        const lists = element.querySelectorAll('ul, ol');
+        lists.forEach(l => l.classList.add('list-disc', 'pl-5', 'space-y-1'));
+
+        const headings = element.querySelectorAll('h3, h4');
+        headings.forEach(h => h.classList.add('font-bold', 'mt-2', 'mb-1'));
     }
 
     scrollToBottom() {
-        this.elements.chatbox.scrollTo(0, this.elements.chatbox.scrollHeight);
+        setTimeout(() => {
+            if (this.elements.chatbox) {
+                this.elements.chatbox.scrollTo({
+                    top: this.elements.chatbox.scrollHeight,
+                    behavior: "smooth"
+                });
+            }
+        }, 50);
     }
 }
 
