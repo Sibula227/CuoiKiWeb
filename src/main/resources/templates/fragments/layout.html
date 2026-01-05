@@ -80,8 +80,16 @@
                     </a>
                     <ul class="dropdown-menu text-small shadow">
                         <li>
+                            <a class="dropdown-item" th:href="@{/profile}"><i class="fa-solid fa-user-pen me-2"></i> Hồ
+                                sơ cá nhân</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
                             <form th:action="@{/logout}" method="post">
-                                <button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
+                                <button type="submit" class="dropdown-item text-danger"><i
+                                        class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng xuất</button>
                             </form>
                         </li>
                     </ul>
