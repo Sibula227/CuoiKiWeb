@@ -27,8 +27,7 @@
                     <span class="fw-bold">Thông báo mới!</span> Bạn có <strong class="text-danger"
                         th:text="${unreadNotificationCount}">3</strong> thông báo chưa đọc.
                     <button class="btn btn-sm btn-link text-decoration-none fw-bold ms-1" type="button"
-                        data-bs-toggle="dropdown" aria-expanded="false"
-                        onclick="document.querySelector('.sidebar .dropdown button').click();">
+                        onclick="var btn = document.getElementById('notification-bell-btn') || document.querySelector('.sidebar .dropdown button[data-bs-toggle=\'dropdown\']'); if(btn) { try { new bootstrap.Dropdown(btn).show(); } catch(e) { btn.click(); } }">
                         Xem ngay
                     </button>
                 </div>

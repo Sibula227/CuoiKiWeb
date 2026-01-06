@@ -46,6 +46,7 @@ public class SecurityConfig {
                         // 4. Phân quyền cho các Role cụ thể
                         .requestMatchers("/student/**").hasAuthority("STUDENT")
                         .requestMatchers("/admin/**").hasAnyAuthority("ADMIN", "ADVISOR")
+                        .requestMatchers("/notification/**").authenticated() // Cho phép User đã đăng nhập xem thông báo
                         // Cho phép truy cập trang quên mật khẩu và reset mật khẩu
                         .requestMatchers("/forgot-password", "/reset-password").permitAll()
 
