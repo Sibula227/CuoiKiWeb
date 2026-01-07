@@ -23,26 +23,28 @@ public class ForgotPasswordController {
     @PostMapping("/forgot-password")
     public String processForgotPassword(@RequestParam("email") String email, Model model) {
         try {
-            userService.processForgotPassword(email);
-            model.addAttribute("message", "Chúng tôi đã gửi link reset mật khẩu vào email của bạn. (Check Console nhé!)");
+            String token = userService.processForgotPassword(email);
+            // Redirect sang trang nhập mật khẩu mới luôn
+            return "redirect:/reset-password?token=" + token;
         } catch (RuntimeException e) {
             model.addAttribute("error", e.getMessage());
+            return "auth/forgot_password";
         }
-        return "auth/forgot_password";
     }
 
     // 2. Trang nhập Mật khẩu mới (Khi bấm vào link từ email)
     @GetMapping("/reset-password")
     public String showResetPasswordForm(@RequestParam("token") String token, Model model) {
-        // Kiểm tra token có hợp lệ không (logic đơn giản check null ở view hoặc service)
+        // Kiểm tra token có hợp lệ không (logic đơn giản check null ở view hoặc
+        // service)
         model.addAttribute("token", token);
         return "auth/reset_password";
     }
 
     @PostMapping("/reset-password")
     public String processResetPassword(@RequestParam("token") String token,
-                                       @RequestParam("password") String password,
-                                       Model model) {
+            @RequestParam("new_password") String password,
+            Model model) {
         try {
             userService.updatePassword(token, password);
             model.addAttribute("message", "Đổi mật khẩu thành công! Vui lòng đăng nhập.");
